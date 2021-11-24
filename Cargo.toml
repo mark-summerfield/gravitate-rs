@@ -1,0 +1,12 @@
+[package]
+name = "gravitate"
+version = "8.0.0"
+edition = "2021"
+
+[profile.release]
+codegen-units = 1
+# lto = "fat" # TODO uncomment when ready for release
+
+[dependencies]
+fltk = {version = "^1.2", features = ["no-pango",]}
+num = "^0.4"
