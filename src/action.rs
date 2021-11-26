@@ -8,4 +8,9 @@ pub enum Action {
     About,
     Help,
     Quit,
+    MoveUp,
+    MoveDown,
+    MoveLeft,
+    MoveRight,
+    ClickTile,
 }

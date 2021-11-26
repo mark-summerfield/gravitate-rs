@@ -3,7 +3,7 @@
 
 use crate::about_form;
 use crate::action::Action;
-use crate::assets;
+use crate::fixed::{APPNAME, ICON};
 use fltk::{
     app,
     enums::{Event, Key},
@@ -37,6 +37,7 @@ impl Application {
                     Action::About => self.on_about(),
                     Action::Help => {} // TODO
                     Action::Quit => self.on_quit(),
+                    _ => {} // TODO MoveUp etc., & ClickTile
                 }
             }
         }
@@ -53,11 +54,11 @@ impl Application {
 }
 
 fn make_window() -> window::Window {
-    let image = image::PngImage::from_data(assets::ICON).unwrap();
+    let image = image::PngImage::from_data(ICON).unwrap();
     let mut main_window = window::Window::default()
         .with_size(260, 300)
         .center_screen()
-        .with_label("Gravitate");
+        .with_label(APPNAME);
     main_window.set_icon(Some(image));
     main_window.make_resizable(true);
     // TODO add toolbuttons
@@ -78,9 +79,7 @@ fn make_bindings(
     });
     main_window.handle(move |_, event| match event {
         Event::KeyUp => {
-            if app::is_event_command()
-                && app::event_key() == Key::from_char('a')
-            {
+            if app::event_key() == Key::from_char('a') {
                 sender.send(Action::About);
             }
             false

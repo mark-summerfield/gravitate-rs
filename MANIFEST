@@ -2,7 +2,7 @@ src/main.rs
 src/action.rs
 src/application.rs
 src/about_form.rs
-src/assets.rs
+src/fixed.rs # VERSION
 src/util.rs
 
 Cargo.toml

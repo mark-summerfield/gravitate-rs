@@ -5,17 +5,18 @@
 mod about_form;
 mod action;
 mod application;
-mod assets;
+mod fixed;
 mod util;
 
 use crate::application::Application;
+use crate::fixed::APPNAME;
 use crate::util::center;
 use fltk::{app, dialog};
 use std::panic;
 
 fn main() {
     panic::set_hook(Box::new(|info| {
-        dialog::message_title("Error — Gravitate");
+        dialog::message_title(&format!("Error — {}", APPNAME));
         if let Some(sender) = info.payload().downcast_ref::<&str>() {
             dialog::message(center().0 - 200, center().1 - 100, sender);
         } else {

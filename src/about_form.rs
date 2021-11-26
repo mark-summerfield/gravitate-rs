@@ -1,7 +1,7 @@
 // Copyright © 2021 Mark Summerfield. All rights reserved.
 // License: GPLv3
 
-use crate::assets;
+use crate::fixed::{APPNAME, ICON, VERSION};
 use crate::util::capitalize_first;
 use chrono::prelude::*;
 use fltk::{app, button, group, image, misc, prelude::*, window};
@@ -17,10 +17,10 @@ impl Form {
         const HEIGHT: i32 = 300;
         const BUTTON_SIZE: i32 = 40;
         const PAD: i32 = 10;
-        let image = image::PngImage::from_data(assets::ICON).unwrap();
+        let image = image::PngImage::from_data(ICON).unwrap();
         let mut form = window::Window::default()
             .with_size(WIDTH, HEIGHT)
-            .with_label("About — Gravitate");
+            .with_label(&format!("About — {}", APPNAME));
         form.set_icon(Some(image));
         let mut pack = group::Pack::default()
             .with_size(WIDTH, HEIGHT)
@@ -71,7 +71,7 @@ fn about_html() -> String {
     };
     format!(
         "<font face=\"Helvetica\"><center>
-<h1><font color=\"navy\">Gravitate</font></h1>
+<h1><font color=\"navy\">{} v{}</font></h1>
 <h3><font face=\"Helvetica\"
 color=\"navy\">A TileFall/SameGame-like game.</font></h2>
 </h3>
@@ -84,6 +84,8 @@ All rights reserved.</font></h5>
 <h5><font face=\"Helvetica\" color=\"green\">License: GPLv3.</font></h5>
 <p>fltk-rs {} • FLTK {} • {}/{}</p>
 </center></font>",
+        APPNAME,
+        VERSION,
         year,
         app::crate_version(),
         app::version_str(),
