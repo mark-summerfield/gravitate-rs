@@ -4,7 +4,7 @@
 use crate::fixed::{APPNAME, ICON, VERSION};
 use crate::util::capitalize_first;
 use chrono::prelude::*;
-use fltk::{app, button, group, image, misc, prelude::*, window};
+use fltk::{app, button, frame, group, image, misc, prelude::*, window};
 use std::env;
 
 pub struct Form {
@@ -13,33 +13,22 @@ pub struct Form {
 
 impl Form {
     pub fn default() -> Self {
-        const WIDTH: i32 = 400;
-        const HEIGHT: i32 = 300;
-        const BUTTON_SIZE: i32 = 40;
-        const PAD: i32 = 10;
         let image = image::PngImage::from_data(ICON).unwrap();
         let mut form = window::Window::default()
-            .with_size(WIDTH, HEIGHT)
+            .with_size(400, 300)
             .with_label(&format!("About — {}", APPNAME));
         form.set_icon(Some(image));
-        let mut pack = group::Pack::default()
-            .with_size(WIDTH, HEIGHT)
-            .center_of_parent()
-            .with_type(group::PackType::Vertical);
-        pack.set_spacing(PAD);
-        let mut view = misc::HelpView::new(
-            0,
-            0,
-            WIDTH,
-            HEIGHT - (BUTTON_SIZE + PAD),
-            "",
-        );
-        view.set_value(&about_html());
-        // TODO pad button left & right or center the button
-        let mut ok_button = button::Button::default()
-            .with_size(0, BUTTON_SIZE)
-            .with_label("&OK");
-        pack.end();
+        let mut flex = group::Flex::default().size_of_parent().column();
+        let _view = misc::HelpView::default().set_value(&about_html());
+        let mut inner_flex =
+            group::Flex::default().size_of_parent().row();
+        let _left = frame::Frame::default();
+        let mut ok_button = button::Button::default().with_label("&OK");
+        let _right = frame::Frame::default();
+        inner_flex.set_size(&mut ok_button, 60);
+        inner_flex.end();
+        flex.set_size(&mut inner_flex, 35);
+        flex.end();
         form.end();
         form.make_modal(true);
         form.show();
