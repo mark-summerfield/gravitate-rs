@@ -2,8 +2,10 @@
 // License: GPLv3
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
+mod about_form;
 mod action;
 mod application;
+mod assets;
 mod util;
 
 use crate::application::Application;

@@ -8,5 +8,6 @@ codegen-units = 1
 # lto = "fat" # TODO uncomment when ready for release
 
 [dependencies]
+chrono = "^0.4"
 fltk = { version = "^1.2", features = ["no-pango",], git = "https://github.com/fltk-rs/fltk-rs" }
 num = "^0.4"

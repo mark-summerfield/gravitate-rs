@@ -1,7 +1,10 @@
 src/main.rs
 src/action.rs
 src/application.rs
+src/about_form.rs
+src/assets.rs
 src/util.rs
+
 Cargo.toml
 
 # TODO for windows will need to incorporate icon; see comparepdfcmd2

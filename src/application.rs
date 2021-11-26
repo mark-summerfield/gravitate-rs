@@ -1,7 +1,9 @@
 // Copyright © 2021 Mark Summerfield. All rights reserved.
 // License: GPLv3
 
+use crate::about_form;
 use crate::action::Action;
+use crate::assets;
 use fltk::{
     app,
     enums::{Event, Key},
@@ -32,23 +34,26 @@ impl Application {
                 match action {
                     Action::New => {}     // TODO
                     Action::Options => {} // TODO
-                    Action::About => {} // TODO use hellofltk version_info
-                    Action::Help => {}  // TODO
+                    Action::About => self.on_about(),
+                    Action::Help => {} // TODO
                     Action::Quit => self.on_quit(),
                 }
             }
         }
     }
 
+    fn on_about(&mut self) {
+        about_form::Form::default();
+    }
+
     fn on_quit(&mut self) {
-        println!("on_quit: save config");
+        println!("on_quit: save config"); // TODO
         self.app.quit();
     }
 }
 
-fn make_window() -> window::Window{
-    let icon = include_bytes!("../images/gravitate.png");
-    let image = image::PngImage::from_data(icon).unwrap();
+fn make_window() -> window::Window {
+    let image = image::PngImage::from_data(assets::ICON).unwrap();
     let mut main_window = window::Window::default()
         .with_size(260, 300)
         .center_screen()
@@ -70,5 +75,16 @@ fn make_bindings(
         {
             sender.send(Action::Quit);
         }
+    });
+    main_window.handle(move |_, event| match event {
+        Event::KeyUp => {
+            if app::is_event_command()
+                && app::event_key() == Key::from_char('a')
+            {
+                sender.send(Action::About);
+            }
+            false
+        }
+        _ => false,
     });
 }
