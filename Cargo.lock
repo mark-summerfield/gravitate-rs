@@ -32,7 +32,7 @@ dependencies = [
 [[package]]
 name = "fltk"
 version = "1.2.18"
-source = "git+https://github.com/fltk-rs/fltk-rs#e0ea99113bbed1460e2f64f3f92d5133e9132245"
+source = "git+https://github.com/fltk-rs/fltk-rs#d7441f2fa1f4e99a7c7e7ad8deae9011a782fa1a"
 dependencies = [
  "bitflags",
  "fltk-sys",
@@ -42,7 +42,7 @@ dependencies = [
 [[package]]
 name = "fltk-sys"
 version = "1.2.18"
-source = "git+https://github.com/fltk-rs/fltk-rs#e0ea99113bbed1460e2f64f3f92d5133e9132245"
+source = "git+https://github.com/fltk-rs/fltk-rs#d7441f2fa1f4e99a7c7e7ad8deae9011a782fa1a"
 dependencies = [
  "cmake",
 ]
