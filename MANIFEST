@@ -1,4 +1,5 @@
 src/main.rs
+src/config.rs
 src/action.rs
 src/application.rs
 src/about_form.rs

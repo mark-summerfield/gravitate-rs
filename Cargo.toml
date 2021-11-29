@@ -11,3 +11,4 @@ codegen-units = 1
 chrono = "^0.4"
 fltk = { version = "^1.2", features = ["no-pango",], git = "https://github.com/fltk-rs/fltk-rs" }
 num = "^0.4"
+state = "^0.5"

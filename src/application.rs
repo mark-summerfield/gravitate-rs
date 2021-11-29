@@ -1,9 +1,11 @@
 // Copyright © 2021 Mark Summerfield. All rights reserved.
 // License: GPLv3
 
+use super::CONFIG;
 use crate::about_form;
 use crate::action::WindowAction;
 use crate::fixed::{APPNAME, ICON};
+use crate::util;
 use fltk::prelude::*;
 
 pub struct Application {
@@ -13,7 +15,6 @@ pub struct Application {
 
 impl Application {
     pub fn new() -> Self {
-        // TODO arg should be config: Config
         let app = fltk::app::App::default()
             .with_scheme(fltk::app::Scheme::Gleam);
         let (sender, receiver) = fltk::app::channel::<WindowAction>();
@@ -42,16 +43,19 @@ impl Application {
     }
 
     fn on_quit(&mut self) {
-        println!("on_quit: save config"); // TODO
+        let config = CONFIG.get().read().unwrap();
+        config.save();
+        println!("saved config:\n{:#?}", &config);
         self.app.quit();
     }
 }
 
 fn make_window() -> fltk::window::Window {
     let image = fltk::image::PngImage::from_data(ICON).unwrap();
+    let (x, y, width, height) = get_xywh();
     let mut main_window = fltk::window::Window::default()
-        .with_size(260, 300)
-        .center_screen()
+        .with_pos(x, y)
+        .with_size(width, height)
         .with_label(APPNAME);
     main_window.set_icon(Some(image));
     main_window.make_resizable(true);
@@ -59,6 +63,28 @@ fn make_window() -> fltk::window::Window {
     // TODO add board
     main_window.end();
     main_window
+}
+
+fn get_xywh() -> (i32, i32, i32, i32) {
+    let middle = util::center();
+    let mut config = CONFIG.get().write().unwrap();
+    let x = if config.window_x >= 0 {
+        config.window_x
+    } else {
+        middle.0 - (config.window_width / 2)
+    };
+    let y = if config.window_y >= 0 {
+        config.window_y
+    } else {
+        middle.1 - (config.window_height / 2)
+    };
+    if x != config.window_x {
+        config.window_x = x;
+    }
+    if y != config.window_y {
+        config.window_y = y;
+    }
+    (x, y, config.window_width, config.window_height)
 }
 
 fn make_bindings(
