@@ -1,6 +1,10 @@
 // Copyright © 2021 Mark Summerfield. All rights reserved.
 // License: GPLv3
 
+use crate::fixed::APPNAME;
+use dirs;
+use std::{env, path};
+
 #[derive(Clone, Debug)]
 pub struct Config {
     pub window_x: i32,
@@ -14,19 +18,26 @@ pub struct Config {
     pub board_delay_ms: u16,
     pub board_score: u16,
     pub board_highscore: u16,
-    pub filename: String,
+    pub filename: path::PathBuf,
 }
 
 impl Config {
     pub fn new() -> Self {
         let mut config = Config::default();
-        // TODO read from file(s) if poss
+        config.filename = get_config_filename();
+        if config.filename.exists() {
+            println!("TODO Config.new read from {:?} if poss", config.filename); // TODO
+        }
         config
     }
 
     pub fn save(&self) {
-        println!("TODO Config.save");
-        // TODO
+        if self.filename.to_string_lossy() == "" {
+            eprintln!("failed to save configuration: no filename");
+        } else {
+            println!("TODO Config.save to {:?}", self.filename);
+            // TODO
+        }
     }
 }
 
@@ -44,7 +55,23 @@ impl Default for Config {
             board_delay_ms: 250,
             board_score: 0,
             board_highscore: 0,
-            filename: String::new(),
+            filename: path::PathBuf::new(),
         }
+    }
+}
+
+fn get_config_filename() -> path::PathBuf {
+    let mut dir = dirs::config_dir();
+    let mut dot = "";
+    if dir.is_none() {
+        if env::consts::FAMILY == "unix" {
+            dot = ".";
+        }
+        dir = dirs::home_dir();
+    }
+    if let Some(dir) = dir { // to_lowercase is for backwards compatability
+        dir.join(format!("{}{}.ini", dot, APPNAME.to_lowercase()))
+    } else {
+        path::PathBuf::new()
     }
 }
