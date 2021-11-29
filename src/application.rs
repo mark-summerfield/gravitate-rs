@@ -2,26 +2,21 @@
 // License: GPLv3
 
 use crate::about_form;
-use crate::action::Action;
+use crate::action::WindowAction;
 use crate::fixed::{APPNAME, ICON};
-use fltk::{
-    app,
-    enums::{Event, Key},
-    image,
-    prelude::*,
-    window,
-};
+use fltk::prelude::*;
 
 pub struct Application {
-    app: app::App,
-    receiver: app::Receiver<Action>,
+    app: fltk::app::App,
+    receiver: fltk::app::Receiver<WindowAction>,
 }
 
 impl Application {
     pub fn new() -> Self {
         // TODO arg should be config: Config
-        let app = app::App::default().with_scheme(app::Scheme::Gleam);
-        let (sender, receiver) = app::channel::<Action>();
+        let app = fltk::app::App::default()
+            .with_scheme(fltk::app::Scheme::Gleam);
+        let (sender, receiver) = fltk::app::channel::<WindowAction>();
         let mut main_window = make_window();
         make_bindings(&mut main_window, sender);
         main_window.show();
@@ -32,12 +27,11 @@ impl Application {
         while self.app.wait() {
             if let Some(action) = self.receiver.recv() {
                 match action {
-                    Action::New => {}     // TODO
-                    Action::Options => {} // TODO
-                    Action::About => self.on_about(),
-                    Action::Help => {} // TODO
-                    Action::Quit => self.on_quit(),
-                    _ => {} // TODO MoveUp etc., & ClickTile
+                    WindowAction::New => {}     // TODO
+                    WindowAction::Options => {} // TODO
+                    WindowAction::About => self.on_about(),
+                    WindowAction::Help => {} // TODO
+                    WindowAction::Quit => self.on_quit(),
                 }
             }
         }
@@ -53,9 +47,9 @@ impl Application {
     }
 }
 
-fn make_window() -> window::Window {
-    let image = image::PngImage::from_data(ICON).unwrap();
-    let mut main_window = window::Window::default()
+fn make_window() -> fltk::window::Window {
+    let image = fltk::image::PngImage::from_data(ICON).unwrap();
+    let mut main_window = fltk::window::Window::default()
         .with_size(260, 300)
         .center_screen()
         .with_label(APPNAME);
@@ -68,22 +62,31 @@ fn make_window() -> window::Window {
 }
 
 fn make_bindings(
-    main_window: &mut window::Window,
-    sender: app::Sender<Action>,
+    main_window: &mut fltk::window::Window,
+    sender: fltk::app::Sender<WindowAction>,
 ) {
+    // Both of these are really needed!
     main_window.set_callback(move |_| {
-        if app::event() == Event::Close || app::event_key() == Key::Escape
+        if fltk::app::event() == fltk::enums::Event::Close
+            || fltk::app::event_key() == fltk::enums::Key::Escape
         {
-            sender.send(Action::Quit);
+            sender.send(WindowAction::Quit);
         }
     });
-    main_window.handle(move |_, event| match event {
-        Event::KeyUp => {
-            if app::event_key() == Key::from_char('a') {
-                sender.send(Action::About);
+    main_window.handle(move |_, event| {
+        const A_KEY: fltk::enums::Key = fltk::enums::Key::from_char('a');
+        const Q_KEY: fltk::enums::Key = fltk::enums::Key::from_char('q');
+        match event {
+            fltk::enums::Event::KeyUp => {
+                match fltk::app::event_key() {
+                    A_KEY => sender.send(WindowAction::About),
+                    // TODO F1 | H_KEY help, N_KEY new game, O_KEY options
+                    Q_KEY => sender.send(WindowAction::Quit),
+                    _ => {}
+                }
+                false
             }
-            false
+            _ => false,
         }
-        _ => false,
     });
 }

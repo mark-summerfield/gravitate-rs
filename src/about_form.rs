@@ -1,34 +1,38 @@
 // Copyright © 2021 Mark Summerfield. All rights reserved.
 // License: GPLv3
 
-use crate::fixed::{APPNAME, ICON, VERSION};
+use crate::fixed::{APPNAME, BUTTON_HEIGHT, BUTTON_WIDTH, ICON, VERSION};
 use crate::util::capitalize_first;
 use chrono::prelude::*;
-use fltk::{app, button, frame, group, image, misc, prelude::*, window};
+use fltk::prelude::*;
 use std::env;
 
 pub struct Form {
-    form: window::Window,
+    form: fltk::window::Window,
 }
 
 impl Form {
     pub fn default() -> Self {
-        let image = image::PngImage::from_data(ICON).unwrap();
-        let mut form = window::Window::default()
-            .with_size(400, 300)
+        const WIDTH: i32 = 400;
+        const HEIGHT: i32 = 300;
+        let image = fltk::image::PngImage::from_data(ICON).unwrap();
+        let mut form = fltk::window::Window::default()
+            .with_size(WIDTH, HEIGHT)
             .with_label(&format!("About — {}", APPNAME));
         form.set_icon(Some(image));
-        let mut flex = group::Flex::default().size_of_parent().column();
-        let _view = misc::HelpView::default().set_value(&about_html());
-        let mut inner_flex =
-            group::Flex::default().size_of_parent().row();
-        let _left = frame::Frame::default();
-        let mut ok_button = button::Button::default().with_label("&OK");
-        let _right = frame::Frame::default();
-        inner_flex.set_size(&mut ok_button, 60);
-        inner_flex.end();
-        flex.set_size(&mut inner_flex, 35);
-        flex.end();
+        let mut vbox =
+            fltk::group::Flex::default().size_of_parent().column();
+        fltk::misc::HelpView::default().set_value(&about_html());
+        let mut button_row =
+            fltk::group::Flex::default().size_of_parent().row();
+        fltk::frame::Frame::default(); // pad left of button
+        let mut ok_button =
+            fltk::button::Button::default().with_label("&OK");
+        fltk::frame::Frame::default(); // pad right of button
+        button_row.set_size(&ok_button, BUTTON_WIDTH);
+        button_row.end();
+        vbox.set_size(&button_row, BUTTON_HEIGHT);
+        vbox.end();
         form.end();
         form.make_modal(true);
         form.show();
@@ -39,7 +43,7 @@ impl Form {
             }
         });
         while form.shown() {
-            app::wait();
+            fltk::app::wait();
         }
         Self { form }
     }
@@ -47,7 +51,7 @@ impl Form {
 
 impl Drop for Form {
     fn drop(&mut self) {
-        app::delete_widget(self.form.clone());
+        fltk::app::delete_widget(self.form.clone());
     }
 }
 
@@ -76,8 +80,8 @@ All rights reserved.</font></h5>
         APPNAME,
         VERSION,
         year,
-        app::crate_version(),
-        app::version_str(),
+        fltk::app::crate_version(),
+        fltk::app::version_str(),
         capitalize_first(env::consts::OS),
         env::consts::ARCH
     )
