@@ -10,7 +10,7 @@ mod fixed;
 mod util;
 
 use crate::application::Application;
-use crate::fixed::APPNAME;
+use crate::fixed::{APPNAME, SCALE_MAX, SCALE_MIN};
 use crate::util::center;
 use std::{panic, sync};
 
@@ -45,8 +45,8 @@ fn handle_commandline() {
         if arg.starts_with("--scale=") {
             let scale = num::clamp(
                 arg.get(8..).unwrap().parse::<f32>().unwrap_or(1.0),
-                0.5,
-                2.5,
+                SCALE_MIN,
+                SCALE_MAX,
             );
             fltk::app::set_screen_scale(0, scale);
             let mut config = CONFIG.get().write().unwrap();

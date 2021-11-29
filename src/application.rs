@@ -45,7 +45,6 @@ impl Application {
     fn on_quit(&mut self) {
         let config = CONFIG.get().read().unwrap();
         config.save();
-        println!("saved config:\n{:#?}", &config);
         self.app.quit();
     }
 }

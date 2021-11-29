@@ -1,6 +1,8 @@
 // Copyright © 2021 Mark Summerfield. All rights reserved.
 // License: GPLv3
 
+use std::{cmp, str};
+
 pub fn center() -> (i32, i32) {
     (
         (fltk::app::screen_size().0 / 2.0) as i32,
@@ -13,5 +15,16 @@ pub fn capitalize_first(s: &str) -> String {
     match c.next() {
         None => String::new(),
         Some(f) => f.to_uppercase().collect::<String>() + c.as_str(),
+    }
+}
+
+// Returns a number in range converted from the given str or the default
+pub fn get_num<T>(s: &str, minimum: T, maximum: T, default: T) -> T
+where
+    T: num::Num + cmp::PartialOrd + Copy + str::FromStr,
+{
+    match s.parse() {
+        Ok(n) if minimum <= n && n <= maximum => n,
+        _ => default,
     }
 }
