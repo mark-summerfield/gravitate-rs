@@ -4,7 +4,10 @@
 use super::CONFIG;
 use crate::about_form;
 use crate::action::WindowAction;
-use crate::fixed::{APPNAME, ICON};
+use crate::fixed::{
+    ABOUT_ICON, APPNAME, HELP_ICON, ICON, NEW_ICON, OPTIONS_ICON, PAD,
+    QUIT_ICON,
+};
 use crate::util;
 use fltk::prelude::*;
 
@@ -19,7 +22,7 @@ impl Application {
         let app = fltk::app::App::default()
             .with_scheme(fltk::app::Scheme::Gleam);
         let (sender, receiver) = fltk::app::channel::<WindowAction>();
-        let mut main_window = make_window();
+        let mut main_window = make_window(sender);
         make_bindings(&mut main_window, sender);
         main_window.show();
         Self { app, main_window, receiver }
@@ -29,10 +32,10 @@ impl Application {
         while self.app.wait() {
             if let Some(action) = self.receiver.recv() {
                 match action {
-                    WindowAction::New => {}     // TODO
-                    WindowAction::Options => {} // TODO
+                    WindowAction::New => println!("New TODO"), // TODO
+                    WindowAction::Options => println!("Options TODO"), // TODO
                     WindowAction::About => self.on_about(),
-                    WindowAction::Help => {} // TODO
+                    WindowAction::Help => println!("Help TODO"), // TODO
                     WindowAction::Quit => self.on_quit(),
                 }
             }
@@ -55,19 +58,93 @@ impl Application {
     }
 }
 
-fn make_window() -> fltk::window::Window {
-    let image = fltk::image::PngImage::from_data(ICON).unwrap();
+fn make_window(
+    sender: fltk::app::Sender<WindowAction>,
+) -> fltk::window::Window {
+    let icon = fltk::image::PngImage::from_data(ICON).unwrap();
     let (x, y, width, height) = get_xywh();
     let mut main_window = fltk::window::Window::default()
         .with_pos(x, y)
         .with_size(width, height)
         .with_label(APPNAME);
-    main_window.set_icon(Some(image));
+    main_window.set_icon(Some(icon));
     main_window.make_resizable(true);
-    // TODO add toolbuttons
-    // TODO add board
+    let mut vbox = fltk::group::Pack::default()
+        .size_of_parent()
+        .with_type(fltk::group::PackType::Vertical);
+    fltk::frame::Frame::default().with_size(width, PAD);
+    add_toolbar(sender, width);
+    // TODO add board (just a frame for now)
+    // TODO add status bar: info  score highscore
+    vbox.end();
     main_window.end();
     main_window
+}
+
+fn add_toolbar(sender: fltk::app::Sender<WindowAction>, width: i32) {
+    let mut button_box = fltk::group::Pack::default()
+        .with_size(width, (TOOLBUTTON_SIZE * 3) / 2)
+        .with_align(fltk::enums::Align::Left)
+        .with_type(fltk::group::PackType::Horizontal);
+    button_box.set_spacing(6);
+    add_toolbutton(
+        sender,
+        'n',
+        "New game • n",
+        WindowAction::New,
+        NEW_ICON,
+    );
+    add_toolbutton(
+        sender,
+        'o',
+        "Options… • o",
+        WindowAction::Options,
+        OPTIONS_ICON,
+    );
+    fltk::frame::Frame::default().with_size(TOOLBUTTON_SIZE, PAD);
+    add_toolbutton(
+        sender,
+        'a',
+        "About • a",
+        WindowAction::About,
+        ABOUT_ICON,
+    );
+    add_toolbutton(
+        sender,
+        'h',
+        "New game • F1 or h",
+        WindowAction::Help,
+        HELP_ICON,
+    );
+    fltk::frame::Frame::default().with_size(TOOLBUTTON_SIZE, PAD);
+    add_toolbutton(
+        sender,
+        'q',
+        "New game • Esc or q",
+        WindowAction::Quit,
+        QUIT_ICON,
+    );
+    button_box.end();
+}
+
+fn add_toolbutton(
+    sender: fltk::app::Sender<WindowAction>,
+    shortcut: char,
+    tooltip: &str,
+    action: WindowAction,
+    icon: &[u8],
+) -> fltk::button::Button {
+    let mut button = fltk::button::Button::default();
+    button.set_size(TOOLBUTTON_SIZE + PAD, TOOLBUTTON_SIZE + PAD);
+    button.visible_focus(false);
+    button.set_label_size(0);
+    button.set_shortcut(fltk::enums::Shortcut::from_char(shortcut));
+    button.set_tooltip(tooltip);
+    let mut icon = fltk::image::PngImage::from_data(icon).unwrap();
+    icon.scale(TOOLBUTTON_SIZE, TOOLBUTTON_SIZE, true, true);
+    button.set_image(Some(icon));
+    button.emit(sender, action);
+    button
 }
 
 fn get_xywh() -> (i32, i32, i32, i32) {
@@ -103,20 +180,17 @@ fn make_bindings(
             sender.send(WindowAction::Quit);
         }
     });
-    main_window.handle(move |_, event| {
-        const A_KEY: fltk::enums::Key = fltk::enums::Key::from_char('a');
-        const Q_KEY: fltk::enums::Key = fltk::enums::Key::from_char('q');
-        match event {
-            fltk::enums::Event::KeyUp => {
-                match fltk::app::event_key() {
-                    A_KEY => sender.send(WindowAction::About),
-                    // TODO F1 | H_KEY help, N_KEY new game, O_KEY options
-                    Q_KEY => sender.send(WindowAction::Quit),
-                    _ => {}
-                }
-                false
+    main_window.handle(move |_, event| match event {
+        fltk::enums::Event::KeyUp => {
+            match fltk::app::event_key() {
+                // TODO | F1
+                fltk::enums::Key::Help => sender.send(WindowAction::Help),
+                _ => {}
             }
-            _ => false,
+            false
         }
+        _ => false,
     });
 }
+
+const TOOLBUTTON_SIZE: i32 = 32;
