@@ -10,11 +10,10 @@ mod fixed;
 mod util;
 
 use crate::application::Application;
-use crate::fixed::{APPNAME, SCALE_MAX, SCALE_MIN};
-use crate::util::center;
+use crate::fixed::{initialize_colors, APPNAME, SCALE_MAX, SCALE_MIN};
 use std::{panic, sync};
 
-static CONFIG: state::Storage<sync::RwLock<config::Config>> =
+pub static CONFIG: state::Storage<sync::RwLock<config::Config>> =
     state::Storage::new();
 
 fn main() {
@@ -22,18 +21,19 @@ fn main() {
         fltk::dialog::message_title(&format!("Error — {}", APPNAME));
         if let Some(sender) = info.payload().downcast_ref::<&str>() {
             fltk::dialog::message(
-                center().0 - 200,
-                center().1 - 100,
+                util::x() - 200,
+                util::y() - 100,
                 sender,
             );
         } else {
             fltk::dialog::message(
-                center().0 - 200,
-                center().1 - 100,
+                util::x() - 200,
+                util::y() - 100,
                 &info.to_string(),
             );
         }
     }));
+    initialize_colors(); // *MUST* be done before CONFIG is created
     CONFIG.set(sync::RwLock::new(config::Config::new()));
     handle_commandline();
     let mut app = Application::new();
@@ -41,16 +41,22 @@ fn main() {
 }
 
 fn handle_commandline() {
+    let mut scale = 0.0;
     for arg in std::env::args().skip(1) {
         if arg.starts_with("--scale=") {
-            let scale = num::clamp(
+            scale = num::clamp(
                 arg.get(8..).unwrap().parse::<f32>().unwrap_or(1.0),
                 SCALE_MIN,
                 SCALE_MAX,
             );
-            fltk::app::set_screen_scale(0, scale);
-            let mut config = CONFIG.get().write().unwrap();
-            config.window_scale = scale;
         }
+    }
+    if !util::iszero32(scale) {
+        let mut config = CONFIG.get().write().unwrap();
+        config.window_scale = scale;
+    }
+    let config = CONFIG.get().read().unwrap();
+    if !util::isone32(config.window_scale) {
+        fltk::app::set_screen_scale(0, config.window_scale);
     }
 }

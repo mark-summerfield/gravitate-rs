@@ -3,11 +3,12 @@
 
 use std::{cmp, str};
 
-pub fn center() -> (i32, i32) {
-    (
-        (fltk::app::screen_size().0 / 2.0) as i32,
-        (fltk::app::screen_size().1 / 2.0) as i32,
-    )
+pub fn x() -> i32 {
+    (fltk::app::screen_size().0 / 2.0) as i32
+}
+
+pub fn y() -> i32 {
+    (fltk::app::screen_size().1 / 2.0) as i32
 }
 
 pub fn capitalize_first(s: &str) -> String {
@@ -28,3 +29,21 @@ where
         _ => default,
     }
 }
+
+pub fn iszero32(n: f32) -> bool {
+    n.abs() <= f32::EPSILON
+}
+
+pub fn isone32(n: f32) -> bool {
+    (1.0..=(1.0 + f32::EPSILON)).contains(&n)
+}
+
+/*
+pub fn iszero(n: f64) -> bool {
+    n.abs() <= f64::EPSILON
+}
+
+pub fn isone(n: f64) -> bool {
+    (1.0..=(1.0 + f64::EPSILON)).contains(&n)
+}
+*/

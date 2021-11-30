@@ -10,6 +10,7 @@ use fltk::prelude::*;
 
 pub struct Application {
     app: fltk::app::App,
+    main_window: fltk::window::Window,
     receiver: fltk::app::Receiver<WindowAction>,
 }
 
@@ -21,7 +22,7 @@ impl Application {
         let mut main_window = make_window();
         make_bindings(&mut main_window, sender);
         main_window.show();
-        Self { app, receiver }
+        Self { app, main_window, receiver }
     }
 
     pub fn run(&mut self) {
@@ -44,7 +45,12 @@ impl Application {
 
     fn on_quit(&mut self) {
         let config = CONFIG.get().read().unwrap();
-        config.save();
+        config.save(
+            self.main_window.x(),
+            self.main_window.y(),
+            self.main_window.width(),
+            self.main_window.height(),
+        );
         self.app.quit();
     }
 }
@@ -65,17 +71,16 @@ fn make_window() -> fltk::window::Window {
 }
 
 fn get_xywh() -> (i32, i32, i32, i32) {
-    let middle = util::center();
     let mut config = CONFIG.get().write().unwrap();
     let x = if config.window_x >= 0 {
         config.window_x
     } else {
-        middle.0 - (config.window_width / 2)
+        util::x() - (config.window_width / 2)
     };
     let y = if config.window_y >= 0 {
         config.window_y
     } else {
-        middle.1 - (config.window_height / 2)
+        util::y() - (config.window_height / 2)
     };
     if x != config.window_x {
         config.window_x = x;
