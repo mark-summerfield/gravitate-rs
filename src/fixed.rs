@@ -14,6 +14,7 @@ pub const NEW_ICON: &[u8] = include_bytes!("../images/new.png");
 pub const OPTIONS_ICON: &[u8] = include_bytes!("../images/options.png");
 pub const QUIT_ICON: &[u8] = include_bytes!("../images/quit.png");
 pub const PAD: i32 = 6;
+pub const TOOLBUTTON_SIZE: i32 = 28;
 pub const BUTTON_HEIGHT: i32 = 40;
 pub const BUTTON_WIDTH: i32 = 70;
 pub const SCALE_MIN: f32 = 0.5;

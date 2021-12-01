@@ -3,6 +3,7 @@ src/commandline.rs
 src/config.rs
 src/action.rs
 src/application.rs
+src/mainwindow.rs
 src/about_form.rs
 src/fixed.rs # VERSION
 src/util.rs

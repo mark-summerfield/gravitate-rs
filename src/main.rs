@@ -8,6 +8,7 @@ mod application;
 mod commandline;
 mod config;
 mod fixed;
+mod mainwindow;
 mod util;
 
 use crate::application::Application;
