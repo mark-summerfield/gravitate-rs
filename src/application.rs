@@ -183,8 +183,9 @@ fn make_bindings(
     main_window.handle(move |_, event| match event {
         fltk::enums::Event::KeyUp => {
             match fltk::app::event_key() {
-                // TODO | F1
-                fltk::enums::Key::Help => sender.send(WindowAction::Help),
+                fltk::enums::Key::Help | fltk::enums::Key::F1 => {
+                    sender.send(WindowAction::Help)
+                }
                 _ => {}
             }
             false
