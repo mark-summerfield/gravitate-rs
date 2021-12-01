@@ -11,6 +11,7 @@ pub struct Application {
     app: fltk::app::App,
     mainwindow: fltk::window::Window,
     statusbar: fltk::frame::Frame,
+    scorelabel: fltk::frame::Frame,
     receiver: fltk::app::Receiver<WindowAction>,
 }
 
@@ -19,10 +20,11 @@ impl Application {
         let app = fltk::app::App::default()
             .with_scheme(fltk::app::Scheme::Gleam);
         let (sender, receiver) = fltk::app::channel::<WindowAction>();
-        let (mut mainwindow, statusbar) = mainwindow::make_window(sender);
+        let (mut mainwindow, statusbar, scorelabel) =
+            mainwindow::make_window(sender);
         mainwindow::make_bindings(&mut mainwindow, sender);
         mainwindow.show();
-        Self { app, mainwindow, statusbar, receiver }
+        Self { app, mainwindow, statusbar, scorelabel, receiver }
     }
 
     pub fn run(&mut self) {
