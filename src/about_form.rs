@@ -15,7 +15,7 @@ impl Form {
     pub fn default() -> Self {
         const WIDTH: i32 = 400;
         const HEIGHT: i32 = 300;
-        let image = fltk::image::PngImage::from_data(ICON).unwrap();
+        let image = fltk::image::SvgImage::from_data(ICON).unwrap();
         let mut form = fltk::window::Window::default()
             .with_size(WIDTH, HEIGHT)
             .with_label(&format!("About — {}", APPNAME));

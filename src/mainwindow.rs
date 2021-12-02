@@ -4,8 +4,8 @@
 use super::CONFIG;
 use crate::action::WindowAction;
 use crate::fixed::{
-    ABOUT_ICON, APPNAME, HELP_ICON, ICON, NEW_ICON, OPTIONS_ICON, PAD,
-    QUIT_ICON, TOOLBUTTON_SIZE
+    ABOUT_ICON, APPNAME, HELP_ICON, ICON, MESSAGE_DELAY, NEW_ICON,
+    OPTIONS_ICON, PAD, QUIT_ICON, TOOLBUTTON_SIZE,
 };
 use crate::util;
 use fltk::prelude::*;
@@ -15,7 +15,7 @@ const TOOLBAR_HEIGHT: i32 = ((TOOLBUTTON_SIZE * 3) / 2) + (2 * PAD);
 pub fn make_window(
     sender: fltk::app::Sender<WindowAction>,
 ) -> (fltk::window::Window, fltk::frame::Frame, fltk::frame::Frame) {
-    let icon = fltk::image::PngImage::from_data(ICON).unwrap();
+    let icon = fltk::image::SvgImage::from_data(ICON).unwrap();
     let (x, y, width, height) = get_xywh();
     let mut mainwindow = fltk::window::Window::default()
         .with_pos(x, y)
@@ -101,7 +101,7 @@ fn add_toolbutton(
     shortcut: char,
     tooltip: &str,
     action: WindowAction,
-    icon: &[u8],
+    icon: &str,
     button_box: &mut fltk::group::Flex,
 ) {
     const TOOLBUTTON_WIDTH: i32 = TOOLBUTTON_SIZE + PAD + 8;
@@ -111,7 +111,7 @@ fn add_toolbutton(
     button.set_label_size(0);
     button.set_shortcut(fltk::enums::Shortcut::from_char(shortcut));
     button.set_tooltip(tooltip);
-    let mut icon = fltk::image::PngImage::from_data(icon).unwrap();
+    let mut icon = fltk::image::SvgImage::from_data(icon).unwrap();
     icon.scale(TOOLBUTTON_SIZE, TOOLBUTTON_SIZE, true, true);
     button.set_image(Some(icon));
     button.emit(sender, action);
@@ -127,7 +127,14 @@ fn add_status_row(
         .with_type(fltk::group::FlexType::Row);
     let mut statusbar =
         fltk::frame::Frame::default().with_label("Click a tile to play…");
-    statusbar.set_frame(fltk::enums::FrameType::EngravedFrame);
+    //statusbar.set_frame(fltk::enums::FrameType::EngravedFrame); // TODO
+    statusbar.set_frame(fltk::enums::FrameType::FlatBox); // FIXME
+    fltk::app::add_timeout(MESSAGE_DELAY, {
+        let mut statusbar = statusbar.clone();
+        move || {
+            statusbar.set_label("");
+        }
+    });
     let config = CONFIG.get().read().unwrap();
     let mut scorelabel = fltk::frame::Frame::default()
         .with_label(&format!("0 • {}", config.board_highscore));

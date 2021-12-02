@@ -7,12 +7,12 @@ use std::sync;
 
 pub static APPNAME: &str = "Gravitate";
 pub static VERSION: &str = "8.0.0";
-pub const ABOUT_ICON: &[u8] = include_bytes!("../images/about.png");
-pub const HELP_ICON: &[u8] = include_bytes!("../images/help.png");
-pub const ICON: &[u8] = include_bytes!("../images/gravitate.png");
-pub const NEW_ICON: &[u8] = include_bytes!("../images/new.png");
-pub const OPTIONS_ICON: &[u8] = include_bytes!("../images/options.png");
-pub const QUIT_ICON: &[u8] = include_bytes!("../images/quit.png");
+pub const ABOUT_ICON: &str = include_str!("../images/about.svg");
+pub const HELP_ICON: &str = include_str!("../images/help.svg");
+pub const ICON: &str = include_str!("../images/gravitate.svg");
+pub const NEW_ICON: &str = include_str!("../images/new.svg");
+pub const OPTIONS_ICON: &str = include_str!("../images/options.svg");
+pub const QUIT_ICON: &str = include_str!("../images/quit.svg");
 pub const PAD: i32 = 6;
 pub const TOOLBUTTON_SIZE: i32 = 28;
 pub const BUTTON_HEIGHT: i32 = 40;
@@ -24,6 +24,7 @@ pub const SIZE_MAX: u8 = 30;
 pub const COLORS_MIN: u8 = 4;
 pub const DELAY_MS_MIN: u16 = 0;
 pub const DELAY_MS_MAX: u16 = 1000;
+pub const MESSAGE_DELAY: f64 = 10.0; // seconds
 
 pub static COLORS: state::Storage<sync::RwLock<HashMap<Color, Color>>> =
     state::Storage::new();
