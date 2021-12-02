@@ -32,10 +32,9 @@ pub fn make_window(
     vbox.set_margin(PAD);
     let toolbar = add_toolbar(sender, width);
     vbox.set_size(&toolbar, TOOLBAR_HEIGHT);
-    let mut board = board::Board::new()
-        .with_size(width, height - (TOOLBAR_HEIGHT * 2));
-    board.set_callback(|event| println!("board clicked"));
-    //vbox.resizable(&board);
+    let mut board = board::Board::new();
+    board.set_size(width, height - (TOOLBAR_HEIGHT * 2));
+//    board.set_callback(move |_| board.on_click()); // FIXME
     let (statusbar, scorelabel) = add_status_row(&mut vbox, width);
     vbox.end();
     mainwindow.end();
@@ -128,12 +127,12 @@ fn add_status_row(
         .with_type(fltk::group::FlexType::Row);
     let mut statusbar =
         fltk::frame::Frame::default().with_label("Click a tile to play…");
-    //statusbar.set_frame(fltk::enums::FrameType::EngravedFrame); // TODO
-    statusbar.set_frame(fltk::enums::FrameType::FlatBox); // FIXME
+    statusbar.set_frame(fltk::enums::FrameType::EngravedFrame);
     fltk::app::add_timeout(MESSAGE_DELAY, {
         let mut statusbar = statusbar.clone();
         move || {
             statusbar.set_label("");
+            fltk::app::redraw(); // redraws the world
         }
     });
     let config = CONFIG.get().read().unwrap();
