@@ -3,6 +3,7 @@
 
 use super::CONFIG;
 use crate::action::WindowAction;
+use crate::board;
 use crate::fixed::{
     ABOUT_ICON, APPNAME, HELP_ICON, ICON, MESSAGE_DELAY, NEW_ICON,
     OPTIONS_ICON, PAD, QUIT_ICON, TOOLBUTTON_SIZE,
@@ -31,10 +32,10 @@ pub fn make_window(
     vbox.set_margin(PAD);
     let toolbar = add_toolbar(sender, width);
     vbox.set_size(&toolbar, TOOLBAR_HEIGHT);
-    let mut board = fltk::frame::Frame::default()
-        .with_label("Board") // TODO
+    let mut board = board::Board::new()
         .with_size(width, height - (TOOLBAR_HEIGHT * 2));
-    vbox.resizable(&board);
+    board.set_callback(|event| println!("board clicked"));
+    //vbox.resizable(&board);
     let (statusbar, scorelabel) = add_status_row(&mut vbox, width);
     vbox.end();
     mainwindow.end();

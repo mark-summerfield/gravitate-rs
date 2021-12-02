@@ -5,6 +5,7 @@
 mod about_form;
 mod action;
 mod application;
+mod board;
 mod commandline;
 mod config;
 mod fixed;
