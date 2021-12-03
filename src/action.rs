@@ -2,19 +2,16 @@
 // License: GPLv3
 
 #[derive(Copy, Clone)]
-pub enum WindowAction {
+pub enum Action {
     New,
     Options,
     About,
     Help,
     Quit,
-}
-
-#[derive(Copy, Clone)]
-pub enum BoardAction {
     MoveUp,
     MoveDown,
     MoveLeft,
     MoveRight,
     ClickTile,
+    PressTile,
 }

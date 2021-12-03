@@ -2,7 +2,7 @@
 // License: GPLv3
 
 use super::CONFIG;
-use crate::action::WindowAction;
+use crate::action::Action;
 use crate::board;
 use crate::fixed::{
     ABOUT_ICON, APPNAME, HELP_ICON, ICON, MESSAGE_DELAY, NEW_ICON,
@@ -13,9 +13,14 @@ use fltk::prelude::*;
 
 const TOOLBAR_HEIGHT: i32 = ((TOOLBUTTON_SIZE * 3) / 2) + (2 * PAD);
 
-pub fn make_window(
-    sender: fltk::app::Sender<WindowAction>,
-) -> (fltk::window::Window, fltk::frame::Frame, fltk::frame::Frame) {
+pub fn make(
+    sender: fltk::app::Sender<Action>,
+) -> (
+    fltk::window::Window,
+    board::Board,
+    fltk::frame::Frame,
+    fltk::frame::Frame,
+) {
     let icon = fltk::image::SvgImage::from_data(ICON).unwrap();
     let (x, y, width, height) = get_xywh();
     let mut mainwindow = fltk::window::Window::default()
@@ -32,17 +37,16 @@ pub fn make_window(
     vbox.set_margin(PAD);
     let toolbar = add_toolbar(sender, width);
     vbox.set_size(&toolbar, TOOLBAR_HEIGHT);
-    let mut board = board::Board::new();
+    let mut board = board::Board::new(sender);
     board.set_size(width, height - (TOOLBAR_HEIGHT * 2));
-//    board.set_callback(move |_| board.on_click()); // FIXME
     let (statusbar, scorelabel) = add_status_row(&mut vbox, width);
     vbox.end();
     mainwindow.end();
-    (mainwindow, statusbar, scorelabel)
+    (mainwindow, board, statusbar, scorelabel)
 }
 
 fn add_toolbar(
-    sender: fltk::app::Sender<WindowAction>,
+    sender: fltk::app::Sender<Action>,
     width: i32,
 ) -> fltk::group::Flex {
     let mut button_box = fltk::group::Flex::default()
@@ -54,7 +58,7 @@ fn add_toolbar(
         sender,
         'n',
         "New game • n",
-        WindowAction::New,
+        Action::New,
         NEW_ICON,
         &mut button_box,
     );
@@ -62,7 +66,7 @@ fn add_toolbar(
         sender,
         'o',
         "Options… • o",
-        WindowAction::Options,
+        Action::Options,
         OPTIONS_ICON,
         &mut button_box,
     );
@@ -71,7 +75,7 @@ fn add_toolbar(
         sender,
         'a',
         "About • a",
-        WindowAction::About,
+        Action::About,
         ABOUT_ICON,
         &mut button_box,
     );
@@ -79,7 +83,7 @@ fn add_toolbar(
         sender,
         'h',
         "New game • F1 or h",
-        WindowAction::Help,
+        Action::Help,
         HELP_ICON,
         &mut button_box,
     );
@@ -88,7 +92,7 @@ fn add_toolbar(
         sender,
         'q',
         "New game • Esc or q",
-        WindowAction::Quit,
+        Action::Quit,
         QUIT_ICON,
         &mut button_box,
     );
@@ -97,10 +101,10 @@ fn add_toolbar(
 }
 
 fn add_toolbutton(
-    sender: fltk::app::Sender<WindowAction>,
+    sender: fltk::app::Sender<Action>,
     shortcut: char,
     tooltip: &str,
-    action: WindowAction,
+    action: Action,
     icon: &str,
     button_box: &mut fltk::group::Flex,
 ) {
@@ -166,28 +170,50 @@ fn get_xywh() -> (i32, i32, i32, i32) {
     (x, y, config.window_width, config.window_height)
 }
 
-pub fn make_bindings(
+pub fn add_event_handler(
     mainwindow: &mut fltk::window::Window,
-    sender: fltk::app::Sender<WindowAction>,
+    sender: fltk::app::Sender<Action>,
 ) {
     // Both of these are really needed!
     mainwindow.set_callback(move |_| {
         if fltk::app::event() == fltk::enums::Event::Close
             || fltk::app::event_key() == fltk::enums::Key::Escape
         {
-            sender.send(WindowAction::Quit);
+            sender.send(Action::Quit);
         }
     });
-    mainwindow.handle(move |_, event| match event {
-        fltk::enums::Event::KeyUp => {
-            match fltk::app::event_key() {
-                fltk::enums::Key::Help | fltk::enums::Key::F1 => {
-                    sender.send(WindowAction::Help)
-                }
-                _ => {}
-            }
-            false
+    mainwindow.handle(move |_, event| {
+        if event == fltk::enums::Event::KeyUp
+            && fltk::app::event_key().bits() == 0x20
+        {
+            sender.send(Action::PressTile); // Space
+            return true;
         }
-        _ => false,
+        match event {
+            fltk::enums::Event::KeyUp => match fltk::app::event_key() {
+                fltk::enums::Key::Help | fltk::enums::Key::F1 => {
+                    sender.send(Action::Help);
+                    true
+                }
+                fltk::enums::Key::Up => {
+                    sender.send(Action::MoveUp);
+                    true
+                }
+                fltk::enums::Key::Down => {
+                    sender.send(Action::MoveDown);
+                    true
+                }
+                fltk::enums::Key::Left => {
+                    sender.send(Action::MoveLeft);
+                    true
+                }
+                fltk::enums::Key::Right => {
+                    sender.send(Action::MoveRight);
+                    true
+                }
+                _ => false,
+            },
+            _ => false,
+        }
     });
 }
