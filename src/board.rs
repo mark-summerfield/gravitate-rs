@@ -37,7 +37,7 @@ impl Board {
             game_over: Rc::default(),
             selected: Rc::default(),
             tiles: Rc::default(),
-            sender
+            sender,
         };
         add_event_handler(&mut board, sender);
         add_draw_handler(&mut board);
@@ -162,18 +162,16 @@ fn add_draw_handler(board: &mut Board) {
         if *drawing.borrow() || *game_over.borrow() {
             return;
         }
-        println!(
-            "draw board: {}x{} tiles={:#?}",
-            widget.width(),
-            widget.height(),
-            tiles
-        );
-        // TODO horrible! And 0, 0 is top-left of app not of widget
-        /*
+        let x = widget.x();
+        let y = widget.y();
+        let width = widget.width() + x;
+        let height = widget.height() + y;
+        println!("draw board: {}x{} tiles={:#?}", width, height, tiles);
+        // TODO horrible! try creating an off-screen image (e.g.,
+        // using impage & imageproc) & then just drawing the PNG
         fltk::draw::set_draw_color(Color::Red);
         fltk::draw::set_line_style(fltk::draw::LineStyle::Solid, 5);
-        fltk::draw::draw_line(0, 0, widget.width(), widget.height());
-        fltk::draw::draw_line(widget.width(), 0, 0, widget.height());
-        */
+        fltk::draw::draw_line(x, y, width, height);
+        fltk::draw::draw_line(width, y, x, height);
     });
 }
