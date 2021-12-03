@@ -5,6 +5,7 @@ use super::CONFIG;
 use crate::about_form;
 use crate::action::Action;
 use crate::board;
+use crate::fixed::MESSAGE_DELAY;
 use crate::mainwindow;
 use fltk::prelude::*;
 
@@ -33,7 +34,7 @@ impl Application {
         while self.app.wait() {
             if let Some(action) = self.receiver.recv() {
                 match action {
-                    Action::New => self.on_new(),
+                    Action::New => self.board.new_game(),
                     Action::Options => self.on_options(),
                     Action::About => self.on_about(),
                     Action::Help => self.on_help(),
@@ -44,13 +45,19 @@ impl Application {
                     Action::MoveRight => self.board.move_right(),
                     Action::ClickTile => self.board.click_tile(),
                     Action::PressTile => self.board.press_tile(),
+                    Action::NewGame => self.on_new_game(),
+                    Action::UpdatedScore(score) => {
+                        self.updated_score(score)
+                    }
+                    Action::GameOver(score) => self.game_over(score),
+                    Action::UserWon(score) => self.user_won(score),
                 }
             }
         }
     }
 
-    fn on_new(&mut self) {
-        println!("Application.on_new"); // TODO
+    fn on_new_game(&mut self) {
+        self.set_status("New game! Click a tile…", Some(MESSAGE_DELAY));
     }
 
     fn on_options(&mut self) {
@@ -74,5 +81,37 @@ impl Application {
             self.mainwindow.height(),
         );
         self.app.quit();
+    }
+
+    fn updated_score(&mut self, score: u16) {
+        println!("Application.updated_score"); // TODO update score
+    }
+
+    fn game_over(&mut self, score: u16) {
+        println!("Application.game_over"); // TODO update score
+    }
+
+    fn user_won(&mut self, score: u16) {
+        println!("Application.user_won"); // TODO update score & maybe highscore
+    }
+
+    fn set_status(&mut self, message: &str, timeout: Option<f64>) {
+        self.statusbar.set_label(message);
+        fltk::app::redraw(); // redraws the world
+        if let Some(timeout) = timeout {
+            fltk::app::add_timeout(timeout, {
+                let mut statusbar = self.statusbar.clone();
+                move || {
+                    statusbar.set_label("");
+                    fltk::app::redraw(); // redraws the world
+                }
+            });
+        }
+    }
+
+    fn clear_status(&mut self) {
+        println!("clear_status");
+        self.statusbar.set_label("");
+        fltk::app::redraw(); // redraws the world
     }
 }

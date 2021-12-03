@@ -15,6 +15,7 @@ pub const OPTIONS_ICON: &str = include_str!("../images/options.svg");
 pub const QUIT_ICON: &str = include_str!("../images/quit.svg");
 pub const PAD: i32 = 6;
 pub const TOOLBUTTON_SIZE: i32 = 28;
+pub const TOOLBAR_HEIGHT: i32 = ((TOOLBUTTON_SIZE * 3) / 2) + (2 * PAD);
 pub const BUTTON_HEIGHT: i32 = 40;
 pub const BUTTON_WIDTH: i32 = 70;
 pub const SCALE_MIN: f32 = 0.5;

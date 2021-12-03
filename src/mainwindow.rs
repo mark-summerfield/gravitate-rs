@@ -5,13 +5,11 @@ use super::CONFIG;
 use crate::action::Action;
 use crate::board;
 use crate::fixed::{
-    ABOUT_ICON, APPNAME, HELP_ICON, ICON, MESSAGE_DELAY, NEW_ICON,
-    OPTIONS_ICON, PAD, QUIT_ICON, TOOLBUTTON_SIZE,
+    ABOUT_ICON, APPNAME, BUTTON_HEIGHT, HELP_ICON, ICON, NEW_ICON,
+    OPTIONS_ICON, PAD, QUIT_ICON, TOOLBAR_HEIGHT, TOOLBUTTON_SIZE,
 };
 use crate::util;
 use fltk::prelude::*;
-
-const TOOLBAR_HEIGHT: i32 = ((TOOLBUTTON_SIZE * 3) / 2) + (2 * PAD);
 
 pub fn make(
     sender: fltk::app::Sender<Action>,
@@ -28,8 +26,8 @@ pub fn make(
         .with_size(width, height)
         .with_label(APPNAME);
     mainwindow.set_icon(Some(icon));
-    const SIZE: i32 = ((TOOLBUTTON_SIZE * 4) / 3) * 6;
-    mainwindow.size_range(SIZE, SIZE, SIZE * 3, SIZE * 3);
+    let size = ((TOOLBUTTON_SIZE * 4) / 3) * 6;
+    mainwindow.size_range(size, size, size * 4, size * 4);
     mainwindow.make_resizable(true);
     let mut vbox = fltk::group::Flex::default()
         .size_of_parent()
@@ -108,9 +106,9 @@ fn add_toolbutton(
     icon: &str,
     button_box: &mut fltk::group::Flex,
 ) {
-    const TOOLBUTTON_WIDTH: i32 = TOOLBUTTON_SIZE + PAD + 8;
+    let width = TOOLBUTTON_SIZE + PAD + 8;
     let mut button = fltk::button::Button::default();
-    button.set_size(TOOLBUTTON_WIDTH, TOOLBUTTON_SIZE + PAD);
+    button.set_size(width, TOOLBUTTON_SIZE + PAD);
     button.visible_focus(false);
     button.set_label_size(0);
     button.set_shortcut(fltk::enums::Shortcut::from_char(shortcut));
@@ -119,7 +117,7 @@ fn add_toolbutton(
     icon.scale(TOOLBUTTON_SIZE, TOOLBUTTON_SIZE, true, true);
     button.set_image(Some(icon));
     button.emit(sender, action);
-    button_box.set_size(&button, TOOLBUTTON_WIDTH);
+    button_box.set_size(&button, width);
 }
 
 fn add_status_row(
@@ -127,25 +125,17 @@ fn add_status_row(
     width: i32,
 ) -> (fltk::frame::Frame, fltk::frame::Frame) {
     let mut status_row = fltk::group::Flex::default()
-        .with_size(width, TOOLBAR_HEIGHT)
+        .with_size(width, BUTTON_HEIGHT)
         .with_type(fltk::group::FlexType::Row);
-    let mut statusbar =
-        fltk::frame::Frame::default().with_label("Click a tile to play…");
+    let mut statusbar = fltk::frame::Frame::default();
     statusbar.set_frame(fltk::enums::FrameType::EngravedFrame);
-    fltk::app::add_timeout(MESSAGE_DELAY, {
-        let mut statusbar = statusbar.clone();
-        move || {
-            statusbar.set_label("");
-            fltk::app::redraw(); // redraws the world
-        }
-    });
     let config = CONFIG.get().read().unwrap();
     let mut scorelabel = fltk::frame::Frame::default()
         .with_label(&format!("0 • {}", config.board_highscore));
     scorelabel.set_frame(fltk::enums::FrameType::EngravedFrame);
     status_row.set_size(&scorelabel, 160);
     status_row.end();
-    vbox.set_size(&status_row, TOOLBAR_HEIGHT);
+    vbox.set_size(&status_row, BUTTON_HEIGHT);
     (statusbar, scorelabel)
 }
 
