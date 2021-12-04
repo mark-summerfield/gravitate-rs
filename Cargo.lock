@@ -94,8 +94,8 @@ dependencies = [
 
 [[package]]
 name = "fltk"
-version = "1.2.18"
-source = "git+https://github.com/fltk-rs/fltk-rs#e2624386535497a3437a4654e5a5bdb6382442e6"
+version = "1.2.19"
+source = "git+https://github.com/fltk-rs/fltk-rs#1c8a33119abdb776d857aef21b1c3aca908078e3"
 dependencies = [
  "bitflags",
  "fltk-sys",
@@ -104,8 +104,8 @@ dependencies = [
 
 [[package]]
 name = "fltk-sys"
-version = "1.2.18"
-source = "git+https://github.com/fltk-rs/fltk-rs#e2624386535497a3437a4654e5a5bdb6382442e6"
+version = "1.2.19"
+source = "git+https://github.com/fltk-rs/fltk-rs#1c8a33119abdb776d857aef21b1c3aca908078e3"
 dependencies = [
  "cmake",
 ]
@@ -184,9 +184,9 @@ dependencies = [
 
 [[package]]
 name = "loom"
-version = "0.5.3"
+version = "0.5.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "5df2c4aeb432e60c9e5ae517ca8ed8b63556ce23093b2758fc8837d75439c5ec"
+checksum = "edc5c7d328e32cc4954e8e01193d7f0ef5ab257b5090b70a964e099a36034309"
 dependencies = [
  "cfg-if",
  "generator",
