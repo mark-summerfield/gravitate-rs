@@ -167,11 +167,6 @@ fn add_draw_handler(board: &mut Board) {
         let width = widget.width() + x;
         let height = widget.height() + y;
         println!("draw board: {}x{} tiles={:#?}", width, height, tiles);
-        // TODO horrible! try creating an off-screen image (e.g.,
-        // using impage & imageproc) & then just drawing the PNG using
-        //  let mut image = image::PngImage::from_data();
-        //  image.scale(width, height), true, true);
-        //  widget.set_image(Some(image));
         fltk::draw::set_draw_color(Color::Red);
         fltk::draw::set_line_style(fltk::draw::LineStyle::Solid, 5);
         fltk::draw::draw_line(x, y, width, height);
