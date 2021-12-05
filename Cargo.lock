@@ -94,8 +94,8 @@ dependencies = [
 
 [[package]]
 name = "fltk"
-version = "1.2.19"
-source = "git+https://github.com/fltk-rs/fltk-rs#1c8a33119abdb776d857aef21b1c3aca908078e3"
+version = "1.2.20"
+source = "git+https://github.com/fltk-rs/fltk-rs#ca03299557f7f82bd08e6ff5cc166518b3104773"
 dependencies = [
  "bitflags",
  "fltk-sys",
@@ -105,7 +105,7 @@ dependencies = [
 [[package]]
 name = "fltk-sys"
 version = "1.2.19"
-source = "git+https://github.com/fltk-rs/fltk-rs#1c8a33119abdb776d857aef21b1c3aca908078e3"
+source = "git+https://github.com/fltk-rs/fltk-rs#ca03299557f7f82bd08e6ff5cc166518b3104773"
 dependencies = [
  "cmake",
 ]
@@ -144,6 +144,7 @@ dependencies = [
  "num",
  "rust-ini",
  "state",
+ "thousands",
 ]
 
 [[package]]
@@ -169,9 +170,9 @@ checksum = "e2abad23fbc42b3700f2f279844dc832adb2b2eb069b2df918f455c4e18cc646"
 
 [[package]]
 name = "libc"
-version = "0.2.108"
+version = "0.2.109"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "8521a1b57e76b1ec69af7599e75e38e7b7fad6610f037db8c79b127201b5d119"
+checksum = "f98a04dce437184842841303488f70d0188c5f51437d2a834dc097eafa909a01"
 
 [[package]]
 name = "log"
@@ -510,6 +511,12 @@ dependencies = [
  "quote",
  "unicode-xid",
 ]
+
+[[package]]
+name = "thousands"
+version = "0.2.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "3bf63baf9f5039dadc247375c29eb13706706cfde997d0330d05aa63a77d8820"
 
 [[package]]
 name = "thread_local"

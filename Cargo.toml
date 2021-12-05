@@ -14,3 +14,4 @@ fltk = { version = "^1.2", features = ["no-pango",], git = "https://github.com/f
 num = "^0.4"
 rust-ini = "^0.17"
 state = "^0.5"
+thousands = "^0.2.0"

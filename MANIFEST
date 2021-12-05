@@ -11,9 +11,6 @@ src/util.rs
 
 Cargo.toml
 
-# TODO draw tiles using image imageproc/gradient
-# TODO create a commas<T>(n: T) -> String function that puts in
-# comma-separators for numbers & use for scorelabel.
 # TODO for windows will need to incorporate icon; see comparepdfcmd2
 
 # vim: syn=yaml

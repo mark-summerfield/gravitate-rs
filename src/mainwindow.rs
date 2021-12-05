@@ -10,6 +10,7 @@ use crate::fixed::{
 };
 use crate::util;
 use fltk::prelude::*;
+use thousands::Separable;
 
 pub fn make(
     sender: fltk::app::Sender<Action>,
@@ -19,12 +20,11 @@ pub fn make(
     fltk::frame::Frame,
     fltk::frame::Frame,
 ) {
+    fltk::window::Window::set_default_xclass(APPNAME);
     let icon = fltk::image::SvgImage::from_data(ICON).unwrap();
     let (x, y, width, height) = get_xywh();
-    let mut mainwindow = fltk::window::Window::default()
-        .with_pos(x, y)
-        .with_size(width, height)
-        .with_label(APPNAME);
+    let mut mainwindow =
+        fltk::window::Window::new(x, y, width, height, APPNAME);
     mainwindow.set_icon(Some(icon));
     let size = ((TOOLBUTTON_SIZE * 4) / 3) * 6;
     mainwindow.size_range(size, size, size * 4, size * 4);
@@ -130,8 +130,9 @@ fn add_status_row(
     let mut statusbar = fltk::frame::Frame::default();
     statusbar.set_frame(fltk::enums::FrameType::EngravedFrame);
     let config = CONFIG.get().read().unwrap();
-    let mut scorelabel = fltk::frame::Frame::default()
-        .with_label(&format!("0 • {}", config.board_highscore));
+    let mut scorelabel = fltk::frame::Frame::default().with_label(
+        &format!("0 • {}", config.board_highscore.separate_with_commas()),
+    );
     scorelabel.set_frame(fltk::enums::FrameType::EngravedFrame);
     status_row.set_size(&scorelabel, 160);
     status_row.end();

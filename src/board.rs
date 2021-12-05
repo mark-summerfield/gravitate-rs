@@ -9,6 +9,8 @@ use std::fmt;
 use std::ops::{Deref, DerefMut};
 use std::rc::Rc;
 
+const BACKGROUND_COLOR: Color = Color::from_hex(0xFFFEE0);
+
 pub struct Coord {
     x: u8,
     y: u8,
@@ -162,14 +164,56 @@ fn add_draw_handler(board: &mut Board) {
         if *drawing.borrow() || *game_over.borrow() {
             return;
         }
-        let x = widget.x();
-        let y = widget.y();
-        let width = widget.width() + x;
-        let height = widget.height() + y;
-        println!("draw board: {}x{} tiles={:#?}", width, height, tiles);
-        fltk::draw::set_draw_color(Color::Red);
-        fltk::draw::set_line_style(fltk::draw::LineStyle::Solid, 5);
-        fltk::draw::draw_line(x, y, width, height);
-        fltk::draw::draw_line(width, y, x, height);
+        *drawing.borrow_mut() = true;
+        let width = widget.width();
+        let height = widget.height();
+        let x1 = widget.x();
+        let y1 = widget.y();
+        fltk::draw::set_line_style(fltk::draw::LineStyle::Solid, 0);
+        draw_background(x1, y1, width, height);
+        draw_tiles(x1, y1, width, height);
+        // *MUST* restore the line style after custom drawing
+        fltk::draw::set_line_style(fltk::draw::LineStyle::Solid, 0);
+        *drawing.borrow_mut() = false;
     });
+}
+
+fn draw_background(x1: i32, y1: i32, width: i32, height: i32) {
+    fltk::draw::set_draw_color(BACKGROUND_COLOR);
+    fltk::draw::draw_rect_fill(
+        x1,
+        y1,
+        width,
+        height,
+        BACKGROUND_COLOR,
+    );
+}
+
+fn draw_tiles(x1: i32, y1: i32, width: i32, height: i32) {
+    let columns = 9; // TODO Get from CONFIG
+    let rows = 9; // TODO Get from CONFIG
+    let tile_width = width / columns;
+    let tile_height = height / rows;
+    for column in 0..columns {
+        let x = x1 + (tile_width * column);
+        for row in 0..rows {
+            let y = y1 + (tile_height * row);
+            let color = Some(Color::Red); // TODO get from tiles
+            if let Some(color) = color {
+                draw_tile(x, y, tile_width, tile_height, color);
+            }
+        }
+    }
+}
+
+fn draw_tile(x: i32, y: i32, width: i32, height: i32, color: Color) {
+    fltk::draw::draw_box(
+        fltk::enums::FrameType::RoundUpBox,
+        x,
+        y,
+        width,
+        height,
+        color,
+    );
+    fltk::draw::draw_rect(x, y, width, height);
 }
