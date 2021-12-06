@@ -18,7 +18,6 @@ pub struct Config {
     pub board_rows: u8,
     pub board_maxcolors: u8,
     pub board_delay_ms: u16,
-    pub board_score: u16,
     pub board_highscore: u16,
     pub filename: std::path::PathBuf,
 }
@@ -85,7 +84,6 @@ impl Default for Config {
             board_rows: 9,
             board_maxcolors: 4,
             board_delay_ms: 250,
-            board_score: 0,
             board_highscore: 0,
             filename: std::path::PathBuf::new(),
         }

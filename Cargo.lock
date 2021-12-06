@@ -142,6 +142,7 @@ dependencies = [
  "dirs",
  "fltk",
  "num",
+ "rand",
  "rust-ini",
  "state",
  "thousands",

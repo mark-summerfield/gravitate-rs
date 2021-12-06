@@ -2,7 +2,6 @@
 // License: GPLv3
 
 use fltk::enums::Color;
-use std::collections::HashMap;
 use std::sync;
 
 pub static APPNAME: &str = "Gravitate";
@@ -27,43 +26,19 @@ pub const DELAY_MS_MIN: u16 = 0;
 pub const DELAY_MS_MAX: u16 = 1000;
 pub const MESSAGE_DELAY: f64 = 10.0; // seconds
 
-pub static COLORS: state::Storage<sync::RwLock<HashMap<Color, Color>>> =
+pub static COLORS: state::Storage<sync::RwLock<Vec<Color>>> =
     state::Storage::new();
 
 pub fn initialize_colors() {
-    let colors = HashMap::from([
-        (
-            Color::from_rgb(0xA0, 0x00, 0x00),
-            Color::from_rgb(0xF8, 0x88, 0x88),
-        ),
-        (
-            Color::from_rgb(0xA0, 0x00, 0x00),
-            Color::from_rgb(0xF8, 0x88, 0x88),
-        ),
-        (
-            Color::from_rgb(0x00, 0xA0, 0x00),
-            Color::from_rgb(0x88, 0xF8, 0x88),
-        ),
-        (
-            Color::from_rgb(0xA0, 0xA0, 0x00),
-            Color::from_rgb(0xF8, 0xF8, 0x88),
-        ),
-        (
-            Color::from_rgb(0x00, 0x00, 0xA0),
-            Color::from_rgb(0x88, 0x88, 0xF8),
-        ),
-        (
-            Color::from_rgb(0xA0, 0x00, 0xA0),
-            Color::from_rgb(0xF8, 0x88, 0xF8),
-        ),
-        (
-            Color::from_rgb(0x00, 0xA0, 0xA0),
-            Color::from_rgb(0x88, 0xF8, 0xF8),
-        ),
-        (
-            Color::from_rgb(0xA0, 0xA0, 0xA0),
-            Color::from_rgb(0xF8, 0xF8, 0xF8),
-        ),
-    ]);
+    let colors = vec![
+        Color::from_hex(0xA00000),
+        Color::from_hex(0xA00000),
+        Color::from_hex(0x00A000),
+        Color::from_hex(0xA0A000),
+        Color::from_hex(0x0000A0),
+        Color::from_hex(0xA000A0),
+        Color::from_hex(0x00A0A0),
+        Color::from_hex(0xA0A0A0),
+    ];
     COLORS.set(sync::RwLock::new(colors));
 }

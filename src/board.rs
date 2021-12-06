@@ -1,9 +1,12 @@
 // Copyright © 2021 Mark Summerfield. All rights reserved.
 // License: GPLv3
 
+use super::CONFIG;
 use crate::action::Action;
+use crate::fixed::COLORS;
 use fltk::enums::Color;
 use fltk::prelude::*;
+use rand::{prelude::*, seq::SliceRandom};
 use std::cell::RefCell;
 use std::fmt;
 use std::ops::{Deref, DerefMut};
@@ -28,6 +31,10 @@ pub struct Board {
     game_over: Rc<RefCell<bool>>,
     selected: Rc<RefCell<Option<Coord>>>,
     tiles: Rc<RefCell<Vec<Vec<Option<Color>>>>>,
+    columns: Rc<RefCell<u8>>,
+    rows: Rc<RefCell<u8>>,
+    delay_ms: Rc<RefCell<u16>>,
+    score: Rc<RefCell<u16>>,
     sender: fltk::app::Sender<Action>,
 }
 
@@ -39,6 +46,10 @@ impl Board {
             game_over: Rc::default(),
             selected: Rc::default(),
             tiles: Rc::default(),
+            columns: Rc::default(),
+            rows: Rc::default(),
+            delay_ms: Rc::default(),
+            score: Rc::default(),
             sender,
         };
         add_event_handler(&mut board, sender);
@@ -51,14 +62,41 @@ impl Board {
         *self.drawing.borrow_mut() = true;
         *self.game_over.borrow_mut() = true;
         *self.selected.borrow_mut() = None;
-        // TODO choose config.maxcolors colors
-        // let colors = { .... } // use a block to access Config r/o
-        // TODO populate tiles
-        // now access Config r/w
-        println!("board.new_game");
+        *self.score.borrow_mut() = 0;
+        let maxcolors = {
+            let config = CONFIG.get().read().unwrap();
+            *self.columns.borrow_mut() = config.board_columns;
+            *self.rows.borrow_mut() = config.board_rows;
+            *self.delay_ms.borrow_mut() = config.board_delay_ms;
+            config.board_maxcolors as usize
+        };
+        let mut rng = rand::thread_rng();
+        let colors: Vec<Color> = {
+            let colors = COLORS.get().read().unwrap();
+            colors.choose_multiple(&mut rng, maxcolors).cloned().collect()
+        };
+        let columns = *self.columns.borrow() as usize;
+        let rows = *self.rows.borrow() as usize;
+        let mut tiles = Vec::with_capacity(columns);
+        for column in 0..columns {
+            tiles.push(Vec::with_capacity(rows));
+            for row in 0..rows {
+                let color = colors.choose(&mut rng);
+                let color = if color.is_some() {
+                    Some(color.unwrap().clone())
+                } else {
+                    None
+                };
+                tiles[column].push(color);
+            }
+        }
+        println!("{:#?}", tiles); // TODO
+        *self.tiles.borrow_mut() = tiles;
         *self.game_over.borrow_mut() = false;
         *self.drawing.borrow_mut() = false;
         self.sender.send(Action::NewGame);
+        self.sender.send(Action::UpdatedScore(*self.score.borrow()));
+        // self.redraw(); FIXME
     }
 
     pub fn move_up(&mut self) {
@@ -160,6 +198,8 @@ fn add_draw_handler(board: &mut Board) {
     let game_over = board.game_over.clone();
     let selected = board.selected.clone();
     let tiles = board.tiles.clone();
+    let columns = *board.columns.borrow();
+    let rows = *board.rows.borrow();
     board.widget.draw(move |widget| {
         if *drawing.borrow() || *game_over.borrow() {
             return;
@@ -171,7 +211,16 @@ fn add_draw_handler(board: &mut Board) {
         let y1 = widget.y();
         fltk::draw::set_line_style(fltk::draw::LineStyle::Solid, 0);
         draw_background(x1, y1, width, height);
-        draw_tiles(x1, y1, width, height);
+        draw_tiles(
+            x1,
+            y1,
+            width,
+            height,
+            columns,
+            rows,
+            &*tiles.borrow(),
+        );
+        // TODO draw focus rect on selected if there is a selected
         // *MUST* restore the line style after custom drawing
         fltk::draw::set_line_style(fltk::draw::LineStyle::Solid, 0);
         *drawing.borrow_mut() = false;
@@ -180,26 +229,30 @@ fn add_draw_handler(board: &mut Board) {
 
 fn draw_background(x1: i32, y1: i32, width: i32, height: i32) {
     fltk::draw::set_draw_color(BACKGROUND_COLOR);
-    fltk::draw::draw_rect_fill(
-        x1,
-        y1,
-        width,
-        height,
-        BACKGROUND_COLOR,
-    );
+    fltk::draw::draw_rect_fill(x1, y1, width, height, BACKGROUND_COLOR);
 }
 
-fn draw_tiles(x1: i32, y1: i32, width: i32, height: i32) {
-    let columns = 9; // TODO Get from CONFIG
-    let rows = 9; // TODO Get from CONFIG
-    let tile_width = width / columns;
-    let tile_height = height / rows;
-    for column in 0..columns {
-        let x = x1 + (tile_width * column);
-        for row in 0..rows {
-            let y = y1 + (tile_height * row);
+fn draw_tiles(
+    x1: i32,
+    y1: i32,
+    width: i32,
+    height: i32,
+    columns: u8,
+    rows: u8,
+    tiles: &Vec<Vec<Option<Color>>>,
+) {
+    println!("columns={} rows={} tiles.len()={}", columns, rows, tiles.len()); // TODO
+    if columns == 0 || rows == 0 || tiles.len() == 0 {
+        return;
+    }
+    let tile_width = width / columns as i32;
+    let tile_height = height / rows as i32;
+    for column in 0..columns as usize {
+        let x = x1 + (tile_width * column as i32);
+        for row in 0..rows as usize {
+            let y = y1 + (tile_height * row as i32);
             let color = Some(Color::Red); // TODO get from tiles
-            if let Some(color) = color {
+            if let Some(color) = tiles[column][row] {
                 draw_tile(x, y, tile_width, tile_height, color);
             }
         }

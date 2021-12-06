@@ -84,7 +84,7 @@ impl Application {
     }
 
     fn updated_score(&mut self, score: u16) {
-        println!("Application.updated_score"); // TODO update score
+        println!("Application.updated_score {}", score); // TODO update score
     }
 
     fn game_over(&mut self, score: u16) {
