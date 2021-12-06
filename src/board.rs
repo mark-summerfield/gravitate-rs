@@ -80,7 +80,7 @@ impl Board {
         let mut tiles = Vec::with_capacity(columns);
         for column in 0..columns {
             tiles.push(Vec::with_capacity(rows));
-            for row in 0..rows {
+            for _ in 0..rows {
                 let color = colors.choose(&mut rng);
                 let color = if color.is_some() {
                     Some(color.unwrap().clone())
@@ -90,18 +90,16 @@ impl Board {
                 tiles[column].push(color);
             }
         }
-        println!("{:#?}", tiles); // TODO
         *self.tiles.borrow_mut() = tiles;
         *self.game_over.borrow_mut() = false;
         *self.drawing.borrow_mut() = false;
         self.sender.send(Action::NewGame);
         self.sender.send(Action::UpdatedScore(*self.score.borrow()));
-        // self.redraw(); FIXME
     }
 
     pub fn move_up(&mut self) {
         let mut moved = false;
-        println!("board.move_up");
+        dbg!("board.move_up");
         if moved {
             // self.sender.send(Action::UpdatedScore(score));
             self.widget.redraw();
@@ -110,7 +108,7 @@ impl Board {
 
     pub fn move_down(&mut self) {
         let mut moved = false;
-        println!("board.move_down");
+        dbg!("board.move_down");
         if moved {
             // self.sender.send(Action::UpdatedScore(score));
             self.widget.redraw();
@@ -119,7 +117,7 @@ impl Board {
 
     pub fn move_left(&mut self) {
         let mut moved = false;
-        println!("board.move_left");
+        dbg!("board.move_left");
         if moved {
             // self.sender.send(Action::UpdatedScore(score));
             self.widget.redraw();
@@ -128,7 +126,7 @@ impl Board {
 
     pub fn move_right(&mut self) {
         let mut moved = false;
-        println!("board.move_right");
+        dbg!("board.move_right");
         if moved {
             // self.sender.send(Action::UpdatedScore(score));
             self.widget.redraw();
@@ -139,7 +137,7 @@ impl Board {
         let mut moved = false;
         let x = fltk::app::event_x() - self.widget.x();
         let y = fltk::app::event_y() - self.widget.y();
-        println!("board.click_tile at {},{}", x, y);
+        dbg!("board.click_tile at {},{}", x, y);
         if moved {
             // self.sender.send(Action::UpdatedScore(score));
             self.widget.redraw();
@@ -147,7 +145,7 @@ impl Board {
     }
 
     pub fn press_tile(&mut self) {
-        println!("board.press_tile");
+        dbg!("board.press_tile");
         if let Some(coord) = &*self.selected.borrow() {
             let mut valid_press = false;
             // TODO click selected if not None else ignore
@@ -198,8 +196,8 @@ fn add_draw_handler(board: &mut Board) {
     let game_over = board.game_over.clone();
     let selected = board.selected.clone();
     let tiles = board.tiles.clone();
-    let columns = *board.columns.borrow();
-    let rows = *board.rows.borrow();
+    let columns = board.columns.clone();
+    let rows = board.rows.clone();
     board.widget.draw(move |widget| {
         if *drawing.borrow() || *game_over.borrow() {
             return;
@@ -216,8 +214,8 @@ fn add_draw_handler(board: &mut Board) {
             y1,
             width,
             height,
-            columns,
-            rows,
+            *columns.borrow(),
+            *rows.borrow(),
             &*tiles.borrow(),
         );
         // TODO draw focus rect on selected if there is a selected
@@ -241,17 +239,12 @@ fn draw_tiles(
     rows: u8,
     tiles: &Vec<Vec<Option<Color>>>,
 ) {
-    println!("columns={} rows={} tiles.len()={}", columns, rows, tiles.len()); // TODO
-    if columns == 0 || rows == 0 || tiles.len() == 0 {
-        return;
-    }
     let tile_width = width / columns as i32;
     let tile_height = height / rows as i32;
     for column in 0..columns as usize {
         let x = x1 + (tile_width * column as i32);
         for row in 0..rows as usize {
             let y = y1 + (tile_height * row as i32);
-            let color = Some(Color::Red); // TODO get from tiles
             if let Some(color) = tiles[column][row] {
                 draw_tile(x, y, tile_width, tile_height, color);
             }
