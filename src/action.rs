@@ -1,7 +1,7 @@
 // Copyright © 2021 Mark Summerfield. All rights reserved.
 // License: GPLv3
 
-#[derive(Copy, Clone)]
+#[derive(Copy, Clone, Debug)]
 pub enum Action {
     New,
     Options,

@@ -26,6 +26,13 @@ pub const DELAY_MS_MIN: u16 = 0;
 pub const DELAY_MS_MAX: u16 = 1000;
 pub const MESSAGE_DELAY: f64 = 10.0; // seconds
 
+pub enum Arrow {
+    Left,
+    Right,
+    Up,
+    Down,
+}
+
 pub static COLORS: state::Storage<sync::RwLock<Vec<Color>>> =
     state::Storage::new();
 

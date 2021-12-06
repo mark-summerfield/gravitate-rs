@@ -3,7 +3,7 @@
 
 use super::CONFIG;
 use crate::action::Action;
-use crate::fixed::COLORS;
+use crate::fixed::{Arrow, COLORS};
 use fltk::enums::Color;
 use fltk::prelude::*;
 use rand::{prelude::*, seq::SliceRandom};
@@ -14,6 +14,9 @@ use std::rc::Rc;
 
 const BACKGROUND_COLOR: Color = Color::from_hex(0xFFFEE0);
 
+type Tiles = Vec<Vec<Option<Color>>>;
+
+#[derive(Copy, Clone, Debug)]
 pub struct Coord {
     x: u8,
     y: u8,
@@ -30,7 +33,7 @@ pub struct Board {
     drawing: Rc<RefCell<bool>>,
     game_over: Rc<RefCell<bool>>,
     selected: Rc<RefCell<Option<Coord>>>,
-    tiles: Rc<RefCell<Vec<Vec<Option<Color>>>>>,
+    tiles: Rc<RefCell<Tiles>>,
     columns: Rc<RefCell<u8>>,
     rows: Rc<RefCell<u8>>,
     delay_ms: Rc<RefCell<u16>>,
@@ -70,81 +73,74 @@ impl Board {
             *self.delay_ms.borrow_mut() = config.board_delay_ms;
             config.board_maxcolors as usize
         };
-        let mut rng = rand::thread_rng();
-        let colors: Vec<Color> = {
-            let colors = COLORS.get().read().unwrap();
-            colors.choose_multiple(&mut rng, maxcolors).cloned().collect()
-        };
-        let columns = *self.columns.borrow() as usize;
-        let rows = *self.rows.borrow() as usize;
-        let mut tiles = Vec::with_capacity(columns);
-        for column in 0..columns {
-            tiles.push(Vec::with_capacity(rows));
-            for _ in 0..rows {
-                let color = colors.choose(&mut rng);
-                let color = if color.is_some() {
-                    Some(color.unwrap().clone())
-                } else {
-                    None
-                };
-                tiles[column].push(color);
-            }
-        }
-        *self.tiles.borrow_mut() = tiles;
+        *self.tiles.borrow_mut() = self.get_tiles(maxcolors);
         *self.game_over.borrow_mut() = false;
         *self.drawing.borrow_mut() = false;
         self.sender.send(Action::NewGame);
         self.sender.send(Action::UpdatedScore(*self.score.borrow()));
     }
 
-    pub fn move_up(&mut self) {
-        let mut moved = false;
-        dbg!("board.move_up");
-        if moved {
-            // self.sender.send(Action::UpdatedScore(score));
-            self.widget.redraw();
+    fn get_tiles(&self, maxcolors: usize) -> Tiles {
+        let columns = *self.columns.borrow() as usize;
+        let rows = *self.rows.borrow() as usize;
+        let colors = self.get_colors(maxcolors);
+        let mut rng = rand::thread_rng();
+        let mut tiles = Vec::with_capacity(columns);
+        for column in 0..columns {
+            tiles.push(Vec::with_capacity(rows));
+            for _ in 0..rows {
+                let color = colors.choose(&mut rng);
+                let color = if color.is_some() {
+                    Some(color.unwrap().clone()) // Want Color not &Color
+                } else {
+                    None
+                };
+                tiles[column].push(color);
+            }
         }
+        tiles
     }
 
-    pub fn move_down(&mut self) {
-        let mut moved = false;
-        dbg!("board.move_down");
-        if moved {
-            // self.sender.send(Action::UpdatedScore(score));
-            self.widget.redraw();
-        }
+    fn get_colors(&self, maxcolors: usize) -> Vec<Color> {
+        let mut rng = rand::thread_rng();
+        let colors = COLORS.get().read().unwrap();
+        colors.choose_multiple(&mut rng, maxcolors).cloned().collect()
     }
 
-    pub fn move_left(&mut self) {
-        let mut moved = false;
-        dbg!("board.move_left");
-        if moved {
-            // self.sender.send(Action::UpdatedScore(score));
-            self.widget.redraw();
+    pub fn on_arrow(&mut self, arrow: Arrow) {
+        if *self.drawing.borrow() || *self.game_over.borrow() {
+            return;
         }
+        if self.selected.borrow().is_none() {
+            *self.selected.borrow_mut() = Some(Coord {
+                x: *self.columns.borrow() / 2,
+                y: *self.rows.borrow() / 2,
+            });
+        } else {
+            let mut coord = self.selected.borrow().unwrap().clone();
+            match arrow {
+                Arrow::Left => coord.x -= 1,
+                Arrow::Right => coord.x += 1,
+                Arrow::Up => coord.y -= 1,
+                Arrow::Down => coord.y += 1,
+            }
+            let tiles = &*self.tiles.borrow();
+            if 0 <= coord.x
+                && coord.x < *self.columns.borrow()
+                && 0 <= coord.y
+                && coord.y < *self.rows.borrow()
+                && tiles[coord.x as usize][coord.y as usize].is_some()
+            {
+                *self.selected.borrow_mut() = Some(coord);
+            }
+        }
+        self.widget.redraw();
     }
 
-    pub fn move_right(&mut self) {
-        let mut moved = false;
-        dbg!("board.move_right");
-        if moved {
-            // self.sender.send(Action::UpdatedScore(score));
-            self.widget.redraw();
+    pub fn on_press_tile(&mut self) {
+        if *self.drawing.borrow() || *self.game_over.borrow() {
+            return;
         }
-    }
-
-    pub fn click_tile(&mut self) {
-        let mut moved = false;
-        let x = fltk::app::event_x() - self.widget.x();
-        let y = fltk::app::event_y() - self.widget.y();
-        dbg!("board.click_tile at {},{}", x, y);
-        if moved {
-            // self.sender.send(Action::UpdatedScore(score));
-            self.widget.redraw();
-        }
-    }
-
-    pub fn press_tile(&mut self) {
         dbg!("board.press_tile");
         if let Some(coord) = &*self.selected.borrow() {
             let mut valid_press = false;
@@ -153,6 +149,20 @@ impl Board {
                 // self.sender.send(Action::UpdatedScore(score));
                 self.widget.redraw();
             }
+        }
+    }
+
+    pub fn on_click_tile(&mut self) {
+        if *self.drawing.borrow() || *self.game_over.borrow() {
+            return;
+        }
+        let mut moved = false;
+        let x = fltk::app::event_x() - self.widget.x();
+        let y = fltk::app::event_y() - self.widget.y();
+        dbg!("board.click_tile at {},{}", x, y);
+        if moved {
+            // self.sender.send(Action::UpdatedScore(score));
+            self.widget.redraw();
         }
     }
 }
@@ -217,8 +227,8 @@ fn add_draw_handler(board: &mut Board) {
             *columns.borrow(),
             *rows.borrow(),
             &*tiles.borrow(),
+            *selected.borrow(),
         );
-        // TODO draw focus rect on selected if there is a selected
         // *MUST* restore the line style after custom drawing
         fltk::draw::set_line_style(fltk::draw::LineStyle::Solid, 0);
         *drawing.borrow_mut() = false;
@@ -238,6 +248,7 @@ fn draw_tiles(
     columns: u8,
     rows: u8,
     tiles: &Vec<Vec<Option<Color>>>,
+    selected: Option<Coord>,
 ) {
     let tile_width = width / columns as i32;
     let tile_height = height / rows as i32;
@@ -247,6 +258,13 @@ fn draw_tiles(
             let y = y1 + (tile_height * row as i32);
             if let Some(color) = tiles[column][row] {
                 draw_tile(x, y, tile_width, tile_height, color);
+                if let Some(coord) = selected {
+                    if coord.x as usize == column
+                        && coord.y as usize == row
+                    {
+                        draw_focus(x, y, tile_width, tile_height);
+                    }
+                }
             }
         }
     }
@@ -262,4 +280,23 @@ fn draw_tile(x: i32, y: i32, width: i32, height: i32, color: Color) {
         color,
     );
     fltk::draw::draw_rect(x, y, width, height);
+}
+
+fn draw_focus(x: i32, y: i32, width: i32, height: i32) {
+    fltk::draw::set_line_style(fltk::draw::LineStyle::Dot, 2);
+    fltk::draw::draw_rect_with_color(
+        x + 4,
+        y + 4,
+        width - 8,
+        height - 8,
+        Color::White,
+    );
+    fltk::draw::draw_rect_with_color(
+        x + 3,
+        y + 3,
+        width - 6,
+        height - 6,
+        Color::Black,
+    );
+    fltk::draw::set_line_style(fltk::draw::LineStyle::Solid, 0);
 }

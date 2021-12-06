@@ -5,7 +5,7 @@ use super::CONFIG;
 use crate::about_form;
 use crate::action::Action;
 use crate::board;
-use crate::fixed::MESSAGE_DELAY;
+use crate::fixed::{Arrow, MESSAGE_DELAY};
 use crate::mainwindow;
 use fltk::prelude::*;
 
@@ -39,12 +39,12 @@ impl Application {
                     Action::About => self.on_about(),
                     Action::Help => self.on_help(),
                     Action::Quit => self.on_quit(),
-                    Action::MoveUp => self.board.move_up(),
-                    Action::MoveDown => self.board.move_down(),
-                    Action::MoveLeft => self.board.move_left(),
-                    Action::MoveRight => self.board.move_right(),
-                    Action::ClickTile => self.board.click_tile(),
-                    Action::PressTile => self.board.press_tile(),
+                    Action::MoveUp => self.board.on_arrow(Arrow::Up),
+                    Action::MoveDown => self.board.on_arrow(Arrow::Down),
+                    Action::MoveLeft => self.board.on_arrow(Arrow::Left),
+                    Action::MoveRight => self.board.on_arrow(Arrow::Right),
+                    Action::ClickTile => self.board.on_click_tile(),
+                    Action::PressTile => self.board.on_press_tile(),
                     Action::NewGame => self.on_new_game(),
                     Action::UpdatedScore(score) => {
                         self.updated_score(score)
