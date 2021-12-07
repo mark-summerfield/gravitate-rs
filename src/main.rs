@@ -22,14 +22,11 @@ pub static CONFIG: state::Storage<sync::RwLock<config::Config>> =
 
 fn main() {
     panic::set_hook(Box::new(|info| {
+        let err = dbg!(&info);
         fltk::dialog::message_title(&format!("Error — {}", APPNAME));
         let x = util::x() - 200;
         let y = util::y() - 100;
-        if let Some(sender) = info.payload().downcast_ref::<&str>() {
-            fltk::dialog::message(x, y, sender);
-        } else {
-            fltk::dialog::message(x, y, &info.to_string());
-        }
+        fltk::dialog::message(x, y, &err.to_string());
     }));
     initialize_colors(); // *MUST* be done before CONFIG is created
     CONFIG.set(sync::RwLock::new(config::Config::new()));

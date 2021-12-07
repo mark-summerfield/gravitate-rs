@@ -46,7 +46,6 @@ impl Board {
         };
         add_event_handler(&mut board, sender);
         add_draw_handler(&mut board);
-        board.new_game();
         board
     }
 
@@ -65,8 +64,8 @@ impl Board {
         *self.tiles.borrow_mut() = self.get_tiles(maxcolors);
         *self.game_over.borrow_mut() = false;
         *self.drawing.borrow_mut() = false;
-        self.sender.send(Action::NewGame);
         self.sender.send(Action::UpdatedScore(*self.score.borrow()));
+        self.widget.redraw();
     }
 
     fn get_tiles(&self, maxcolors: usize) -> Tiles {
@@ -233,9 +232,19 @@ impl Board {
             return; // Color doesn't match or already done
         }
         self.adjoining.borrow_mut().insert(coord);
-        self.populate_adjoining(Coord::new(coord.x - 1, coord.y), color);
+        if coord.x > 0 {
+            self.populate_adjoining(
+                Coord::new(coord.x - 1, coord.y),
+                color,
+            );
+        }
         self.populate_adjoining(Coord::new(coord.x + 1, coord.y), color);
-        self.populate_adjoining(Coord::new(coord.x, coord.y - 1), color);
+        if coord.y > 0 {
+            self.populate_adjoining(
+                Coord::new(coord.x, coord.y - 1),
+                color,
+            );
+        }
         self.populate_adjoining(Coord::new(coord.x, coord.y + 1), color);
     }
 

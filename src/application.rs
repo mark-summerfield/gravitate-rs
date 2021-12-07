@@ -27,14 +27,23 @@ impl Application {
             mainwindow::make(sender);
         mainwindow::add_event_handler(&mut mainwindow, sender);
         mainwindow.show();
-        Self { app, mainwindow, board, statusbar, scorelabel, receiver }
+        let mut app = Self {
+            app,
+            mainwindow,
+            board,
+            statusbar,
+            scorelabel,
+            receiver,
+        };
+        app.on_new_game();
+        app
     }
 
     pub fn run(&mut self) {
         while self.app.wait() {
             if let Some(action) = self.receiver.recv() {
                 match action {
-                    Action::New => self.board.new_game(),
+                    Action::New => self.on_new_game(),
                     Action::Options => self.on_options(),
                     Action::About => self.on_about(),
                     Action::Help => self.on_help(),
@@ -51,7 +60,6 @@ impl Application {
                         self.board.delete_adjoining()
                     }
                     Action::CloseUp => self.board.close_up(),
-                    Action::NewGame => self.on_new_game(),
                     Action::UpdatedScore(score) => {
                         self.updated_score(score)
                     }
@@ -62,7 +70,8 @@ impl Application {
         }
     }
 
-    fn on_new_game(&mut self) {
+    pub fn on_new_game(&mut self) {
+        self.board.new_game();
         self.set_status("New game! Click a tile…", Some(MESSAGE_DELAY));
     }
 
@@ -102,6 +111,7 @@ impl Application {
     }
 
     fn set_status(&mut self, message: &str, timeout: Option<f64>) {
+        // TODO doesn't work on Windows
         self.statusbar.set_label(message);
         fltk::app::redraw(); // redraws the world
         if let Some(timeout) = timeout {
