@@ -9,8 +9,11 @@ use fltk::enums::Color;
 use fltk::prelude::*;
 use rand::seq::SliceRandom;
 use std::cell::RefCell;
+use std::collections::HashSet;
 use std::ops::{Deref, DerefMut};
 use std::rc::Rc;
+
+type CoordSet = HashSet<Coord>;
 
 pub struct Board {
     widget: fltk::widget::Widget,
@@ -22,6 +25,7 @@ pub struct Board {
     rows: Rc<RefCell<u8>>,
     delay_ms: Rc<RefCell<u16>>,
     score: Rc<RefCell<u16>>,
+    adjoining: Rc<RefCell<CoordSet>>,
     sender: fltk::app::Sender<Action>,
 }
 
@@ -37,6 +41,7 @@ impl Board {
             rows: Rc::default(),
             delay_ms: Rc::default(),
             score: Rc::default(),
+            adjoining: Rc::default(),
             sender,
         };
         add_event_handler(&mut board, sender);
@@ -190,10 +195,38 @@ impl Board {
     }
 
     fn dim_adjoining(&mut self, coord: &Coord, color: &Color) {
-        dbg!("board.dim_adjoining", coord, color);
-        // if deleted then:
-        //   self.sender.send(Action::UpdatedScore(score));
-        //   self.widget.redraw();
+        self.adjoining.borrow_mut().clear();
+        self.populate_adjoining(*coord, *color);
+        let maxcolors = {
+            let config = CONFIG.get().read().unwrap();
+            config.board_maxcolors as u32
+        };
+        *self.score.borrow_mut() +=
+            (self.adjoining.borrow().len() as u16).pow(maxcolors - 2);
+        self.sender.send(Action::UpdatedScore(*self.score.borrow()));
+        // TODO dim adjoining
+        // TODO delete adjoining
+    }
+
+    fn populate_adjoining(&self, coord: Coord, color: Color) {
+        let columns = *self.columns.borrow() as usize;
+        let rows = *self.rows.borrow() as usize;
+        let x = coord.x as usize;
+        let y = coord.y as usize;
+        if x >= columns || y >= rows {
+            return; // Falled off an edge; Coord.{x,y} cannot be < 0
+        }
+        let tiles = &*self.tiles.borrow();
+        if self.adjoining.borrow().contains(&coord)
+            || tiles[x][y] != Some(color)
+        {
+            return; // Color doesn't match or already done
+        }
+        self.adjoining.borrow_mut().insert(coord);
+        self.populate_adjoining(Coord::new(coord.x - 1, coord.y), color);
+        self.populate_adjoining(Coord::new(coord.x + 1, coord.y), color);
+        self.populate_adjoining(Coord::new(coord.x, coord.y - 1), color);
+        self.populate_adjoining(Coord::new(coord.x, coord.y + 1), color);
     }
 }
 

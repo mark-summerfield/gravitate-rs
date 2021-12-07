@@ -8,7 +8,7 @@ pub const BACKGROUND_COLOR: Color = Color::from_hex(0xFFFEE0);
 
 pub type Tiles = Vec<Vec<Option<Color>>>;
 
-#[derive(Copy, Clone, Debug)]
+#[derive(Copy, Clone, Debug, PartialEq, Eq, Hash)]
 pub struct Coord {
     pub x: u8,
     pub y: u8,
