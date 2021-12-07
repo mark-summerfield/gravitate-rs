@@ -257,7 +257,7 @@ impl Board {
     }
 
     pub fn close_up(&mut self) {
-        dbg!("close_up");
+        dbg!("close_up"); // Use board_util::ripple()
     }
 }
 

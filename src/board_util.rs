@@ -102,3 +102,18 @@ fn draw_focus(x: i32, y: i32, width: i32, height: i32) {
     );
     fltk::draw::set_line_style(fltk::draw::LineStyle::Solid, 0);
 }
+
+pub fn ripple(n: usize) -> Vec<usize> {
+    // The purpose is to favor the player especially in the end game by
+    // working from the middle out.
+    let mut ripple = Vec::with_capacity(n);
+    let middle = n / 2;
+    for (i, j) in (middle..n).zip((0..middle).rev()) {
+        ripple.push(i);
+        ripple.push(j);
+    }
+    if (n % 2) != 0 {
+        ripple.push(n - 1);
+    }
+    ripple
+}
