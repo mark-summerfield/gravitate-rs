@@ -42,9 +42,15 @@ impl Application {
                     Action::MoveUp => self.board.on_arrow(Arrow::Up),
                     Action::MoveDown => self.board.on_arrow(Arrow::Down),
                     Action::MoveLeft => self.board.on_arrow(Arrow::Left),
-                    Action::MoveRight => self.board.on_arrow(Arrow::Right),
+                    Action::MoveRight => {
+                        self.board.on_arrow(Arrow::Right)
+                    }
                     Action::ClickTile => self.board.on_click_tile(),
                     Action::PressTile => self.board.on_press_tile(),
+                    Action::DeleteAdjoining => {
+                        self.board.delete_adjoining()
+                    }
+                    Action::CloseUp => self.board.close_up(),
                     Action::NewGame => self.on_new_game(),
                     Action::UpdatedScore(score) => {
                         self.updated_score(score)

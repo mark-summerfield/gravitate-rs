@@ -14,8 +14,10 @@ pub enum Action {
     MoveRight,
     ClickTile,
     PressTile,
+    DeleteAdjoining,
+    CloseUp,
     NewGame,
     UpdatedScore(u16), // score
-    GameOver(u16), // score
-    UserWon(u16), // score
+    GameOver(u16),     // score
+    UserWon(u16),      // score
 }

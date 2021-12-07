@@ -4,7 +4,7 @@
 use super::CONFIG;
 use crate::action::Action;
 use crate::board_util::{self, Coord, Tiles};
-use crate::fixed::{Arrow, COLORS};
+use crate::fixed::{Arrow, COLORS, TINY_DELAY};
 use fltk::enums::Color;
 use fltk::prelude::*;
 use rand::seq::SliceRandom;
@@ -197,15 +197,25 @@ impl Board {
     fn dim_adjoining(&mut self, coord: &Coord, color: &Color) {
         self.adjoining.borrow_mut().clear();
         self.populate_adjoining(*coord, *color);
-        let maxcolors = {
+        let (maxcolors, delay_ms) = {
             let config = CONFIG.get().read().unwrap();
-            config.board_maxcolors as u32
+            (config.board_maxcolors as u32, config.board_delay_ms)
         };
         *self.score.borrow_mut() +=
             (self.adjoining.borrow().len() as u16).pow(maxcolors - 2);
         self.sender.send(Action::UpdatedScore(*self.score.borrow()));
-        // TODO dim adjoining
-        // TODO delete adjoining
+        let tiles = &mut *self.tiles.borrow_mut();
+        for &coord in self.adjoining.borrow().iter() {
+            let x = coord.x as usize;
+            let y = coord.y as usize;
+            tiles[x][y] = Some(tiles[x][y].unwrap().darker());
+        }
+        fltk::app::sleep(TINY_DELAY);
+        self.widget.redraw();
+        let sender = self.sender.clone();
+        fltk::app::add_timeout(delay_ms as f64 / 1000.0, move || {
+            sender.send(Action::DeleteAdjoining);
+        });
     }
 
     fn populate_adjoining(&self, coord: Coord, color: Color) {
@@ -227,6 +237,27 @@ impl Board {
         self.populate_adjoining(Coord::new(coord.x + 1, coord.y), color);
         self.populate_adjoining(Coord::new(coord.x, coord.y - 1), color);
         self.populate_adjoining(Coord::new(coord.x, coord.y + 1), color);
+    }
+
+    pub fn delete_adjoining(&mut self) {
+        let tiles = &mut *self.tiles.borrow_mut();
+        for &coord in self.adjoining.borrow().iter() {
+            tiles[coord.x as usize][coord.y as usize] = None
+        }
+        fltk::app::sleep(TINY_DELAY);
+        self.widget.redraw();
+        let delay_ms = {
+            let config = CONFIG.get().read().unwrap();
+            config.board_delay_ms
+        };
+        let sender = self.sender.clone();
+        fltk::app::add_timeout(delay_ms as f64 / 1000.0, move || {
+            sender.send(Action::CloseUp);
+        });
+    }
+
+    pub fn close_up(&mut self) {
+        dbg!("close_up");
     }
 }
 

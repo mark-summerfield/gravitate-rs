@@ -25,6 +25,7 @@ pub const COLORS_MIN: u8 = 4;
 pub const DELAY_MS_MIN: u16 = 0;
 pub const DELAY_MS_MAX: u16 = 1000;
 pub const MESSAGE_DELAY: f64 = 10.0; // seconds
+pub const TINY_DELAY: f64 = 0.005; // seconds
 
 pub enum Arrow {
     Left,
