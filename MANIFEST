@@ -5,6 +5,7 @@ src/action.rs
 src/application.rs
 src/mainwindow.rs
 src/board.rs
+src/board_util.rs
 src/about_form.rs
 src/fixed.rs # VERSION
 src/util.rs
