@@ -2,13 +2,46 @@
 // License: GPLv3
 
 use fltk::enums::Color;
+use std::cmp::Ordering;
 use std::fmt;
 
 pub const BACKGROUND_COLOR: Color = Color::from_hex(0xFFFEE0);
 
 pub type Tiles = Vec<Vec<Option<Color>>>;
 
-#[derive(Copy, Clone, Debug, PartialEq, Eq, Hash)]
+#[derive(Copy, Clone, Debug, PartialOrd)]
+pub struct HeapElement {
+    pub d: f64,
+    pub coord: Coord,
+}
+
+impl HeapElement {
+    pub fn new(d: f64, coord: Coord) -> Self {
+        Self { d, coord }
+    }
+}
+
+impl PartialEq for HeapElement {
+    fn eq(&self, other: &Self) -> bool {
+        (self.d..=(self.d + f64::EPSILON)).contains(&other.d)
+    }
+}
+
+impl Ord for HeapElement {
+    fn cmp(&self, other: &Self) -> Ordering {
+        if self.d < other.d {
+            Ordering::Less
+        } else if self.d > other.d {
+            Ordering::Greater
+        } else {
+            Ordering::Equal
+        }
+    }
+}
+
+impl Eq for HeapElement {}
+
+#[derive(Copy, Clone, Debug, PartialEq, Eq, Hash, PartialOrd, Ord)]
 pub struct Coord {
     pub x: u8,
     pub y: u8,

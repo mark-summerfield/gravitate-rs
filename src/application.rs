@@ -60,6 +60,10 @@ impl Application {
                         self.board.delete_adjoining()
                     }
                     Action::CloseUp => self.board.close_up(),
+                    Action::MoveTile { new_coord, new_color, coord } => {
+                        self.board.move_tile(new_coord, new_color, coord)
+                    }
+                    Action::Redraw => self.board.redraw(),
                     Action::UpdatedScore(score) => {
                         self.updated_score(score)
                     }
@@ -111,7 +115,6 @@ impl Application {
     }
 
     fn set_status(&mut self, message: &str, timeout: Option<f64>) {
-        // TODO doesn't work on Windows
         self.statusbar.set_label(message);
         fltk::app::redraw(); // redraws the world
         if let Some(timeout) = timeout {

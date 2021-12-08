@@ -3,17 +3,19 @@
 
 use super::CONFIG;
 use crate::action::Action;
-use crate::board_util::{self, Coord, Tiles};
+use crate::board_util::{self, Coord, HeapElement, Tiles};
 use crate::fixed::{Arrow, COLORS, TINY_DELAY};
 use fltk::enums::Color;
 use fltk::prelude::*;
 use rand::seq::SliceRandom;
 use std::cell::RefCell;
-use std::collections::HashSet;
+use std::cmp::Reverse;
+use std::collections::{BinaryHeap, HashMap, HashSet};
 use std::ops::{Deref, DerefMut};
 use std::rc::Rc;
 
 type CoordSet = HashSet<Coord>;
+type CoordForCoord = HashMap<Coord, Coord>;
 
 pub struct Board {
     widget: fltk::widget::Widget,
@@ -23,6 +25,7 @@ pub struct Board {
     tiles: Rc<RefCell<Tiles>>,
     columns: Rc<RefCell<u8>>,
     rows: Rc<RefCell<u8>>,
+    maxcolors: Rc<RefCell<u8>>,
     delay_ms: Rc<RefCell<u16>>,
     score: Rc<RefCell<u16>>,
     adjoining: Rc<RefCell<CoordSet>>,
@@ -39,6 +42,7 @@ impl Board {
             tiles: Rc::default(),
             columns: Rc::default(),
             rows: Rc::default(),
+            maxcolors: Rc::default(),
             delay_ms: Rc::default(),
             score: Rc::default(),
             adjoining: Rc::default(),
@@ -54,24 +58,22 @@ impl Board {
         *self.game_over.borrow_mut() = true;
         *self.selected.borrow_mut() = None;
         *self.score.borrow_mut() = 0;
-        let maxcolors = {
-            let config = CONFIG.get().read().unwrap();
-            *self.columns.borrow_mut() = config.board_columns;
-            *self.rows.borrow_mut() = config.board_rows;
-            *self.delay_ms.borrow_mut() = config.board_delay_ms;
-            config.board_maxcolors as usize
-        };
-        *self.tiles.borrow_mut() = self.get_tiles(maxcolors);
+        let config = CONFIG.get().read().unwrap();
+        *self.columns.borrow_mut() = config.board_columns;
+        *self.rows.borrow_mut() = config.board_rows;
+        *self.maxcolors.borrow_mut() = config.board_maxcolors;
+        *self.delay_ms.borrow_mut() = config.board_delay_ms;
+        *self.tiles.borrow_mut() = self.get_tiles();
         *self.game_over.borrow_mut() = false;
         *self.drawing.borrow_mut() = false;
         self.sender.send(Action::UpdatedScore(*self.score.borrow()));
         self.widget.redraw();
     }
 
-    fn get_tiles(&self, maxcolors: usize) -> Tiles {
+    fn get_tiles(&self) -> Tiles {
         let columns = *self.columns.borrow() as usize;
         let rows = *self.rows.borrow() as usize;
-        let colors = self.get_colors(maxcolors);
+        let colors = self.get_colors();
         let mut rng = rand::thread_rng();
         let mut tiles = Vec::with_capacity(columns);
         for column in 0..columns {
@@ -89,10 +91,13 @@ impl Board {
         tiles
     }
 
-    fn get_colors(&self, maxcolors: usize) -> Vec<Color> {
+    fn get_colors(&self) -> Vec<Color> {
         let mut rng = rand::thread_rng();
         let colors = COLORS.get().read().unwrap();
-        colors.choose_multiple(&mut rng, maxcolors).cloned().collect()
+        colors
+            .choose_multiple(&mut rng, (*self.maxcolors.borrow()).into())
+            .cloned()
+            .collect()
     }
 
     pub fn on_arrow(&mut self, arrow: Arrow) {
@@ -196,12 +201,9 @@ impl Board {
     fn dim_adjoining(&mut self, coord: &Coord, color: &Color) {
         self.adjoining.borrow_mut().clear();
         self.populate_adjoining(*coord, *color);
-        let (maxcolors, delay_ms) = {
-            let config = CONFIG.get().read().unwrap();
-            (config.board_maxcolors as u32, config.board_delay_ms)
-        };
-        *self.score.borrow_mut() +=
-            (self.adjoining.borrow().len() as u16).pow(maxcolors - 2);
+        *self.score.borrow_mut() += (self.adjoining.borrow().len()
+            as u16)
+            .pow(*self.maxcolors.borrow() as u32 - 2);
         self.sender.send(Action::UpdatedScore(*self.score.borrow()));
         let tiles = &mut *self.tiles.borrow_mut();
         for &coord in self.adjoining.borrow().iter() {
@@ -212,9 +214,12 @@ impl Board {
         fltk::app::sleep(TINY_DELAY);
         self.widget.redraw();
         let sender = self.sender.clone();
-        fltk::app::add_timeout(delay_ms as f64 / 1000.0, move || {
-            sender.send(Action::DeleteAdjoining);
-        });
+        fltk::app::add_timeout(
+            *self.delay_ms.borrow() as f64 / 1000.0,
+            move || {
+                sender.send(Action::DeleteAdjoining);
+            },
+        );
     }
 
     fn populate_adjoining(&self, coord: Coord, color: Color) {
@@ -255,18 +260,174 @@ impl Board {
         }
         fltk::app::sleep(TINY_DELAY);
         self.widget.redraw();
-        let delay_ms = {
-            let config = CONFIG.get().read().unwrap();
-            config.board_delay_ms
-        };
         let sender = self.sender.clone();
-        fltk::app::add_timeout(delay_ms as f64 / 1000.0, move || {
-            sender.send(Action::CloseUp);
-        });
+        fltk::app::add_timeout(
+            *self.delay_ms.borrow() as f64 / 1000.0,
+            move || {
+                sender.send(Action::CloseUp);
+            },
+        );
     }
 
     pub fn close_up(&mut self) {
+        self.move_tiles();
         dbg!("close_up"); // Use board_util::ripple()
+    }
+
+    fn move_tiles(&mut self) {
+        let tiles = self.tiles.clone();
+        let columns = *self.columns.borrow() as usize;
+        let rows = *self.rows.borrow() as usize;
+        let mut moved = true;
+        let mut moves = CoordForCoord::new();
+        while moved {
+            moved = false;
+            for x in board_util::ripple(columns) {
+                for y in board_util::ripple(rows) {
+                    if let Some(color) = tiles.borrow()[x][y] {
+                        if self.move_if_possible(
+                            color,
+                            Coord::new(x as u8, y as u8),
+                            &mut moves,
+                        ) {
+                            moved = true;
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    fn move_if_possible(
+        &mut self,
+        color: Color,
+        coord: Coord,
+        moves: &mut CoordForCoord,
+    ) -> bool {
+        let mut empties = self.get_empty_neighbours(coord);
+        if !empties.is_empty() {
+            let (do_move, new_coord) =
+                self.nearest_to_middle(color, coord, &empties);
+            if let Some(key_coord) = moves.get(&new_coord) {
+                if key_coord == &coord {
+                    return false; // avoid endless loop back and forth
+                }
+            }
+            if do_move {
+                let tiles = self.tiles.clone();
+                let new_color =
+                    tiles.borrow()[coord.x as usize][coord.y as usize];
+                if let Some(new_color) = new_color {
+                    self.sender.send(Action::MoveTile {
+                        new_coord,
+                        new_color,
+                        coord,
+                    });
+                }
+                moves[&coord] = new_coord; // ###################
+                return true;
+            }
+        }
+        false
+    }
+
+    pub fn move_tile(
+        &mut self,
+        new_coord: Coord,
+        new_color: Color,
+        coord: Coord,
+    ) {
+        let tiles = &mut *self.tiles.borrow_mut();
+        tiles[new_coord.x as usize][new_coord.y as usize] =
+            Some(new_color);
+        tiles[coord.x as usize][coord.y as usize] = None;
+        let delay = 1.0_f64.max((*self.delay_ms.borrow() / 7000) as f64);
+        let sender = self.sender.clone();
+        fltk::app::add_timeout(delay, move || {
+            sender.send(Action::Redraw);
+        });
+    }
+
+    fn get_empty_neighbours(&mut self, coord: Coord) -> CoordSet {
+        let columns = *self.columns.borrow() as usize;
+        let rows = *self.rows.borrow() as usize;
+        let mut coords = Vec::with_capacity(4);
+        if coord.x > 0 {
+            coords.push(Coord::new(coord.x - 1, coord.y));
+        }
+        coords.push(Coord::new(coord.x + 1, coord.y));
+        if coord.y > 0 {
+            coords.push(Coord::new(coord.x, coord.y - 1));
+        }
+        coords.push(Coord::new(coord.x, coord.y + 1));
+        let mut neighbours = CoordSet::new();
+        let tiles = self.tiles.clone();
+        for new_coord in coords.iter() {
+            let x = new_coord.x as usize;
+            let y = new_coord.y as usize;
+            if x < columns && y < rows {
+                if tiles.borrow()[x][y].is_none() {
+                    neighbours.insert(new_coord.clone());
+                }
+            }
+        }
+        neighbours
+    }
+
+    fn nearest_to_middle(
+        &self,
+        color: Color,
+        coord: Coord,
+        empties: &CoordSet,
+    ) -> (bool, Coord) {
+        let x_mid = (*self.columns.borrow() as u8) / 2;
+        let y_mid = (*self.rows.borrow() as u8) / 2;
+        let d_old =
+            ((x_mid - coord.x) as f64).hypot((y_mid - coord.y) as f64);
+        let mut heap = BinaryHeap::new();
+        for new_coord in empties.iter() {
+            if self.is_square(&new_coord) {
+                let mut d_new = ((x_mid - new_coord.x) as f64)
+                    .hypot((y_mid - new_coord.y) as f64);
+                if self.is_legal(&new_coord, color) {
+                    d_new -= 0.1; // Make same colors slightly attractive
+                }
+                heap.push(Reverse(HeapElement::new(
+                    d_new,
+                    new_coord.clone(),
+                )));
+            }
+        }
+        if let Some(Reverse(element)) = heap.pop() {
+            if d_old > element.d {
+                return (true, element.coord);
+            }
+        }
+        (false, coord)
+    }
+
+    fn is_square(&self, coord: &Coord) -> bool {
+        let columns = *self.columns.borrow() as usize;
+        let rows = *self.rows.borrow() as usize;
+        let x = coord.x as usize;
+        let y = coord.y as usize;
+        let tiles = &*self.tiles.borrow();
+        if x > 0 && tiles[x - 1][y].is_some() {
+            true
+        } else if x + 1 < columns && tiles[x + 1][y].is_some() {
+            true
+        } else if y > 0 && tiles[x][y - 1].is_some() {
+            true
+        } else if y + 1 < rows && tiles[x][y + 1].is_some() {
+            true
+        } else {
+            false
+        }
+    }
+
+    pub fn redraw(&mut self) {
+        self.widget.redraw();
     }
 }
 
