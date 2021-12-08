@@ -162,6 +162,7 @@ impl Board {
     }
 
     fn delete_tile(&mut self, coord: Coord) {
+        dbg!();
         let color =
             self.tiles.borrow()[coord.x as usize][coord.y as usize];
         if color.is_none() {
@@ -199,6 +200,7 @@ impl Board {
     }
 
     fn dim_adjoining(&mut self, coord: &Coord, color: &Color) {
+        dbg!();
         self.adjoining.borrow_mut().clear();
         self.populate_adjoining(*coord, *color);
         *self.score.borrow_mut() += (self.adjoining.borrow().len()
@@ -223,6 +225,7 @@ impl Board {
     }
 
     fn populate_adjoining(&self, coord: Coord, color: Color) {
+        dbg!();
         let columns = *self.columns.borrow() as usize;
         let rows = *self.rows.borrow() as usize;
         let x = coord.x as usize;
@@ -254,6 +257,7 @@ impl Board {
     }
 
     pub fn delete_adjoining(&mut self) {
+        dbg!();
         let tiles = &mut *self.tiles.borrow_mut();
         for &coord in self.adjoining.borrow().iter() {
             tiles[coord.x as usize][coord.y as usize] = None
@@ -270,11 +274,24 @@ impl Board {
     }
 
     pub fn close_up(&mut self) {
+        dbg!();
         self.move_tiles();
-        dbg!("close_up"); // Use board_util::ripple()
+        if let Some(mut selected) = *self.selected.borrow_mut() {
+            let x = selected.x as usize;
+            let y = selected.y as usize;
+            let tiles = &*self.tiles.borrow();
+            if tiles[x][y].is_none() {
+                let columns = *self.columns.borrow();
+                let rows = *self.rows.borrow();
+                selected = Coord::new(rows / 2, columns / 2);
+            }
+        }
+        self.widget.redraw();
+        // TODO check game over
     }
 
     fn move_tiles(&mut self) {
+        dbg!();
         let tiles = self.tiles.clone();
         let columns = *self.columns.borrow() as usize;
         let rows = *self.rows.borrow() as usize;
@@ -284,9 +301,8 @@ impl Board {
             moved = false;
             for x in board_util::ripple(columns) {
                 for y in board_util::ripple(rows) {
-                    if let Some(color) = tiles.borrow()[x][y] {
+                    if tiles.borrow()[x][y].is_some() {
                         if self.move_if_possible(
-                            color,
                             Coord::new(x as u8, y as u8),
                             &mut moves,
                         ) {
@@ -301,14 +317,14 @@ impl Board {
 
     fn move_if_possible(
         &mut self,
-        color: Color,
         coord: Coord,
         moves: &mut CoordForCoord,
     ) -> bool {
-        let mut empties = self.get_empty_neighbours(coord);
+        let empties = self.get_empty_neighbours(coord);
+        dbg!(&empties);
         if !empties.is_empty() {
             let (do_move, new_coord) =
-                self.nearest_to_middle(color, coord, &empties);
+                self.nearest_to_middle(coord, &empties);
             if let Some(key_coord) = moves.get(&new_coord) {
                 if key_coord == &coord {
                     return false; // avoid endless loop back and forth
@@ -325,7 +341,7 @@ impl Board {
                         coord,
                     });
                 }
-                moves[&coord] = new_coord; // ###################
+                moves.insert(coord, new_coord);
                 return true;
             }
         }
@@ -338,6 +354,7 @@ impl Board {
         new_color: Color,
         coord: Coord,
     ) {
+        dbg!();
         let tiles = &mut *self.tiles.borrow_mut();
         tiles[new_coord.x as usize][new_coord.y as usize] =
             Some(new_color);
@@ -350,6 +367,7 @@ impl Board {
     }
 
     fn get_empty_neighbours(&mut self, coord: Coord) -> CoordSet {
+        dbg!();
         let columns = *self.columns.borrow() as usize;
         let rows = *self.rows.borrow() as usize;
         let mut coords = Vec::with_capacity(4);
@@ -366,10 +384,8 @@ impl Board {
         for new_coord in coords.iter() {
             let x = new_coord.x as usize;
             let y = new_coord.y as usize;
-            if x < columns && y < rows {
-                if tiles.borrow()[x][y].is_none() {
-                    neighbours.insert(new_coord.clone());
-                }
+            if x < columns && y < rows && tiles.borrow()[x][y].is_none() {
+                neighbours.insert(new_coord.clone());
             }
         }
         neighbours
@@ -377,10 +393,13 @@ impl Board {
 
     fn nearest_to_middle(
         &self,
-        color: Color,
         coord: Coord,
         empties: &CoordSet,
     ) -> (bool, Coord) {
+        dbg!();
+        let tiles = self.tiles.clone();
+        let color =
+            tiles.borrow()[coord.x as usize][coord.y as usize].unwrap();
         let x_mid = (*self.columns.borrow() as u8) / 2;
         let y_mid = (*self.rows.borrow() as u8) / 2;
         let d_old =
