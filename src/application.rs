@@ -60,9 +60,6 @@ impl Application {
                         self.board.delete_adjoining()
                     }
                     Action::CloseUp => self.board.close_up(),
-                    Action::MoveTile { new_pos, pos } => {
-                        self.board.move_tile(new_pos, pos)
-                    }
                     Action::Redraw => self.board.redraw(),
                     Action::UpdatedScore(score) => {
                         self.updated_score(score)

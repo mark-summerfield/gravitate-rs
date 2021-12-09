@@ -308,23 +308,20 @@ impl Board {
                 }
             }
             if do_move {
-                self.sender.send(Action::MoveTile { new_pos, pos });
+                let tiles = &mut *self.tiles.borrow_mut();
+                tiles[new_pos.x][new_pos.y] = tiles[pos.x][pos.y];
+                tiles[pos.x][pos.y] = None;
+                let delay =
+                    1.0_f64.max((*self.delay_ms.borrow() / 1000) as f64);
+                let sender = self.sender.clone();
+                fltk::app::add_timeout(delay, move || {
+                    sender.send(Action::Redraw);
+                });
                 moves.insert(pos, new_pos);
                 return true;
             }
         }
         false
-    }
-
-    pub fn move_tile(&mut self, new_pos: Pos, pos: Pos) {
-        let tiles = &mut *self.tiles.borrow_mut();
-        tiles[new_pos.x][new_pos.y] = tiles[pos.x][pos.y];
-        tiles[pos.x][pos.y] = None;
-        let delay = 1.0_f64.max((*self.delay_ms.borrow() / 7000) as f64);
-        let sender = self.sender.clone();
-        fltk::app::add_timeout(delay, move || {
-            sender.send(Action::Redraw);
-        });
     }
 
     fn get_empty_neighbours(&mut self, pos: Pos) -> PosSet {
@@ -335,20 +332,19 @@ impl Board {
         if x > 0 {
             positions.push(Pos::new(x - 1, y));
         }
-        positions.push(Pos::new(x + 1, y));
+        if x + 1 < size.columns {
+            positions.push(Pos::new(x + 1, y));
+        }
         if y > 0 {
             positions.push(Pos::new(x, y - 1));
         }
-        positions.push(Pos::new(x, y + 1));
+        if y + 1 < size.rows {
+            positions.push(Pos::new(x, y + 1));
+        }
         let mut neighbours = PosSet::new();
         let tiles = self.tiles.clone();
         for new_pos in positions.iter() {
-            let nx = new_pos.x;
-            let ny = new_pos.y;
-            if nx < size.columns
-                && ny < size.rows
-                && tiles.borrow()[nx][ny].is_none()
-            {
+            if tiles.borrow()[new_pos.x][new_pos.y].is_none() {
                 neighbours.insert(new_pos.clone());
             }
         }
