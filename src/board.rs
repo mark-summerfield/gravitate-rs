@@ -14,7 +14,6 @@ use std::ops::{Deref, DerefMut};
 use std::rc::Rc;
 
 type PosSet = HashSet<Pos>;
-type PosForPos = HashMap<Pos, Pos>;
 
 pub struct Board {
     widget: fltk::widget::Widget,
@@ -275,15 +274,12 @@ impl Board {
         let tiles = self.tiles.clone();
         let size = *self.size.borrow();
         let mut moved = true;
-        let mut moves = PosForPos::new();
         while moved {
             moved = false;
             for x in board_util::ripple(size.columns) {
                 for y in board_util::ripple(size.rows) {
                     if tiles.borrow()[x][y].is_some() {
-                        if self
-                            .move_if_possible(Pos::new(x, y), &mut moves)
-                        {
+                        if self.move_if_possible(Pos::new(x, y)) {
                             moved = true;
                             break;
                         }
@@ -293,27 +289,17 @@ impl Board {
         }
     }
 
-    fn move_if_possible(
-        &mut self,
-        pos: Pos,
-        moves: &mut PosForPos,
-    ) -> bool {
+    fn move_if_possible(&mut self, pos: Pos) -> bool {
         let empties = self.get_empty_neighbours(pos);
         if !empties.is_empty() {
             let (do_move, new_pos) =
                 self.nearest_to_middle(pos, &empties);
-            if let Some(value) = moves.get(&new_pos) {
-                if value == &pos {
-                    return false; // avoid endless loop back and forth
-                }
-            }
             if do_move {
                 let tiles = &mut *self.tiles.borrow_mut();
                 tiles[new_pos.x][new_pos.y] = tiles[pos.x][pos.y];
                 tiles[pos.x][pos.y] = None;
                 fltk::app::sleep(TINY_DELAY);
                 self.widget.redraw();
-                moves.insert(pos, new_pos);
                 return true;
             }
         }
