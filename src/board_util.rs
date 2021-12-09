@@ -2,44 +2,11 @@
 // License: GPLv3
 
 use fltk::enums::Color;
-use std::cmp::Ordering;
 use std::fmt;
 
 pub const BACKGROUND_COLOR: Color = Color::from_hex(0xFFFEE0);
 
 pub type Tiles = Vec<Vec<Option<Color>>>;
-
-#[derive(Copy, Clone, Debug, PartialOrd)]
-pub struct HeapElement {
-    pub d: f64,
-    pub pos: Pos,
-}
-
-impl HeapElement {
-    pub fn new(d: f64, pos: Pos) -> Self {
-        Self { d, pos }
-    }
-}
-
-impl PartialEq for HeapElement {
-    fn eq(&self, other: &Self) -> bool {
-        (self.d..=(self.d + f64::EPSILON)).contains(&other.d)
-    }
-}
-
-impl Ord for HeapElement {
-    fn cmp(&self, other: &Self) -> Ordering {
-        if self.d < other.d {
-            Ordering::Less
-        } else if self.d > other.d {
-            Ordering::Greater
-        } else {
-            Ordering::Equal
-        }
-    }
-}
-
-impl Eq for HeapElement {}
 
 #[derive(Copy, Clone, Debug, Default)]
 pub struct Size {
@@ -60,8 +27,20 @@ pub struct Pos {
 }
 
 impl Pos {
+    pub const INVALID: usize = usize::MAX;
+
     pub fn new(x: usize, y: usize) -> Self {
         Self { x, y }
+    }
+
+    pub fn is_valid(&self) -> bool {
+        self.x != Pos::INVALID && self.y != Pos::INVALID
+    }
+}
+
+impl Default for Pos {
+    fn default() -> Self {
+        Self { x: Pos::INVALID, y: Pos::INVALID }
     }
 }
 
@@ -96,8 +75,12 @@ pub fn draw_tiles(
     tiles: &Vec<Vec<Option<Color>>>,
     selected: Option<Pos>,
 ) {
-    let (tile_width, tile_height) =
-        get_tile_size(size.columns as i32, size.rows as i32, width, height);
+    let (tile_width, tile_height) = get_tile_size(
+        size.columns as i32,
+        size.rows as i32,
+        width,
+        height,
+    );
     for column in 0..size.columns {
         let x = x1 + (tile_width * column as i32);
         for row in 0..size.rows {

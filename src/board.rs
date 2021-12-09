@@ -3,14 +3,13 @@
 
 use super::CONFIG;
 use crate::action::Action;
-use crate::board_util::{self, HeapElement, Pos, Size, Tiles};
+use crate::board_util::{self, Pos, Size, Tiles};
 use crate::fixed::{Arrow, COLORS, TINY_DELAY};
 use fltk::enums::Color;
 use fltk::prelude::*;
 use rand::seq::SliceRandom;
 use std::cell::RefCell;
-use std::cmp::Reverse;
-use std::collections::{BinaryHeap, HashMap, HashSet};
+use std::collections::{HashMap, HashSet};
 use std::ops::{Deref, DerefMut};
 use std::rc::Rc;
 
@@ -303,21 +302,13 @@ impl Board {
         if !empties.is_empty() {
             let (do_move, new_pos) =
                 self.nearest_to_middle(pos, &empties);
-            if let Some(key_pos) = moves.get(&new_pos) {
-                if key_pos == &pos {
+            if let Some(value) = moves.get(&new_pos) {
+                if value == &pos {
                     return false; // avoid endless loop back and forth
                 }
             }
             if do_move {
-                let tiles = self.tiles.clone();
-                let new_color = tiles.borrow()[pos.x][pos.y];
-                if let Some(new_color) = new_color {
-                    self.sender.send(Action::MoveTile {
-                        new_pos,
-                        new_color,
-                        pos,
-                    });
-                }
+                self.sender.send(Action::MoveTile { new_pos, pos });
                 moves.insert(pos, new_pos);
                 return true;
             }
@@ -325,14 +316,9 @@ impl Board {
         false
     }
 
-    pub fn move_tile(
-        &mut self,
-        new_pos: Pos,
-        new_color: Color,
-        pos: Pos,
-    ) {
+    pub fn move_tile(&mut self, new_pos: Pos, pos: Pos) {
         let tiles = &mut *self.tiles.borrow_mut();
-        tiles[new_pos.x][new_pos.y] = Some(new_color);
+        tiles[new_pos.x][new_pos.y] = tiles[pos.x][pos.y];
         tiles[pos.x][pos.y] = None;
         let delay = 1.0_f64.max((*self.delay_ms.borrow() / 7000) as f64);
         let sender = self.sender.clone();
@@ -343,21 +329,26 @@ impl Board {
 
     fn get_empty_neighbours(&mut self, pos: Pos) -> PosSet {
         let size = *self.size.borrow();
-        let mut poss = Vec::with_capacity(4);
-        if pos.x > 0 {
-            poss.push(Pos::new(pos.x - 1, pos.y));
+        let x = pos.x;
+        let y = pos.y;
+        let mut positions = Vec::with_capacity(4);
+        if x > 0 {
+            positions.push(Pos::new(x - 1, y));
         }
-        poss.push(Pos::new(pos.x + 1, pos.y));
-        if pos.y > 0 {
-            poss.push(Pos::new(pos.x, pos.y - 1));
+        positions.push(Pos::new(x + 1, y));
+        if y > 0 {
+            positions.push(Pos::new(x, y - 1));
         }
-        poss.push(Pos::new(pos.x, pos.y + 1));
+        positions.push(Pos::new(x, y + 1));
         let mut neighbours = PosSet::new();
         let tiles = self.tiles.clone();
-        for new_pos in poss.iter() {
-            let x = new_pos.x;
-            let y = new_pos.y;
-            if x < size.columns && y < size.rows && tiles.borrow()[x][y].is_none() {
+        for new_pos in positions.iter() {
+            let nx = new_pos.x;
+            let ny = new_pos.y;
+            if nx < size.columns
+                && ny < size.rows
+                && tiles.borrow()[nx][ny].is_none()
+            {
                 neighbours.insert(new_pos.clone());
             }
         }
@@ -369,33 +360,38 @@ impl Board {
         pos: Pos,
         empties: &PosSet,
     ) -> (bool, Pos) {
+        let x = pos.x;
+        let y = pos.y;
         let tiles = self.tiles.clone();
-        let color = tiles.borrow()[pos.x][pos.y].unwrap();
+        let color = tiles.borrow()[x][y].unwrap();
         let size = *self.size.borrow();
-        let x_mid = size.columns / 2;
-        let y_mid = size.rows / 2;
-        let d_old =
-            ((x_mid - pos.x) as f64).hypot((y_mid - pos.y) as f64);
-        let mut heap = BinaryHeap::new();
+        let mid_x = size.columns / 2;
+        let mid_y = size.rows / 2;
+        let old_radius = ((mid_x - x) as f64).hypot((mid_y - y) as f64);
+        let mut shortest_radius = f64::NAN;
+        let mut radius_pos = Pos::default(); // invalid
         for new_pos in empties.iter() {
+            let nx = new_pos.x;
+            let ny = new_pos.y;
             if self.is_square(&new_pos) {
-                let mut d_new = ((x_mid - new_pos.x) as f64)
-                    .hypot((y_mid - new_pos.y) as f64);
+                let mut new_radius =
+                    ((mid_x - nx) as f64).hypot((mid_y - ny) as f64);
                 if self.is_legal(&new_pos, color) {
-                    d_new -= 0.1; // Make same colors slightly attractive
+                    // Make same colors slightly attractive
+                    new_radius -= 0.1;
                 }
-                heap.push(Reverse(HeapElement::new(
-                    d_new,
-                    new_pos.clone(),
-                )));
+                if !radius_pos.is_valid() || shortest_radius > new_radius
+                {
+                    shortest_radius = new_radius;
+                    radius_pos = new_pos.clone();
+                }
             }
         }
-        if let Some(Reverse(element)) = heap.pop() {
-            if d_old > element.d {
-                return (true, element.pos);
-            }
+        if !shortest_radius.is_nan() && old_radius > shortest_radius {
+            (true, radius_pos)
+        } else {
+            (false, pos)
         }
-        (false, pos)
     }
 
     fn is_square(&self, pos: &Pos) -> bool {
