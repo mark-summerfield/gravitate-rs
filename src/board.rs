@@ -3,7 +3,7 @@
 
 use super::CONFIG;
 use crate::action::Action;
-use crate::board_util::{self, Coord, HeapElement, Tiles};
+use crate::board_util::{self, HeapElement, Pos, Size, Tiles};
 use crate::fixed::{Arrow, COLORS, TINY_DELAY};
 use fltk::enums::Color;
 use fltk::prelude::*;
@@ -14,21 +14,20 @@ use std::collections::{BinaryHeap, HashMap, HashSet};
 use std::ops::{Deref, DerefMut};
 use std::rc::Rc;
 
-type CoordSet = HashSet<Coord>;
-type CoordForCoord = HashMap<Coord, Coord>;
+type PosSet = HashSet<Pos>;
+type PosForPos = HashMap<Pos, Pos>;
 
 pub struct Board {
     widget: fltk::widget::Widget,
     drawing: Rc<RefCell<bool>>,
     game_over: Rc<RefCell<bool>>,
-    selected: Rc<RefCell<Option<Coord>>>,
+    selected: Rc<RefCell<Option<Pos>>>,
     tiles: Rc<RefCell<Tiles>>,
-    columns: Rc<RefCell<u8>>,
-    rows: Rc<RefCell<u8>>,
+    size: Rc<RefCell<Size>>,
     maxcolors: Rc<RefCell<u8>>,
     delay_ms: Rc<RefCell<u16>>,
     score: Rc<RefCell<u16>>,
-    adjoining: Rc<RefCell<CoordSet>>,
+    adjoining: Rc<RefCell<PosSet>>,
     sender: fltk::app::Sender<Action>,
 }
 
@@ -40,8 +39,7 @@ impl Board {
             game_over: Rc::default(),
             selected: Rc::default(),
             tiles: Rc::default(),
-            columns: Rc::default(),
-            rows: Rc::default(),
+            size: Rc::default(),
             maxcolors: Rc::default(),
             delay_ms: Rc::default(),
             score: Rc::default(),
@@ -59,8 +57,10 @@ impl Board {
         *self.selected.borrow_mut() = None;
         *self.score.borrow_mut() = 0;
         let config = CONFIG.get().read().unwrap();
-        *self.columns.borrow_mut() = config.board_columns;
-        *self.rows.borrow_mut() = config.board_rows;
+        *self.size.borrow_mut() = Size::new(
+            config.board_columns as usize,
+            config.board_rows as usize,
+        );
         *self.maxcolors.borrow_mut() = config.board_maxcolors;
         *self.delay_ms.borrow_mut() = config.board_delay_ms;
         *self.tiles.borrow_mut() = self.get_tiles();
@@ -71,14 +71,13 @@ impl Board {
     }
 
     fn get_tiles(&self) -> Tiles {
-        let columns = *self.columns.borrow() as usize;
-        let rows = *self.rows.borrow() as usize;
+        let size = *self.size.borrow();
         let colors = self.get_colors();
         let mut rng = rand::thread_rng();
-        let mut tiles = Vec::with_capacity(columns);
-        for column in 0..columns {
-            tiles.push(Vec::with_capacity(rows));
-            for _ in 0..rows {
+        let mut tiles = Vec::with_capacity(size.columns);
+        for column in 0..size.columns {
+            tiles.push(Vec::with_capacity(size.rows));
+            for _ in 0..size.rows {
                 let color = colors.choose(&mut rng);
                 let color = if color.is_some() {
                     Some(color.unwrap().clone()) // Want Color not &Color
@@ -104,26 +103,25 @@ impl Board {
         if *self.drawing.borrow() || *self.game_over.borrow() {
             return;
         }
+        let size = *self.size.borrow();
         if self.selected.borrow().is_none() {
-            *self.selected.borrow_mut() = Some(Coord::new(
-                *self.columns.borrow() / 2,
-                *self.rows.borrow() / 2,
-            ));
+            *self.selected.borrow_mut() =
+                Some(Pos::new(size.columns / 2, size.rows / 2));
         } else {
-            let mut coord = self.selected.borrow().unwrap().clone();
+            let mut pos = self.selected.borrow().unwrap().clone();
             match arrow {
-                Arrow::Left => coord.x -= 1,
-                Arrow::Right => coord.x += 1,
-                Arrow::Up => coord.y -= 1,
-                Arrow::Down => coord.y += 1,
+                Arrow::Left => pos.x -= 1,
+                Arrow::Right => pos.x += 1,
+                Arrow::Up => pos.y -= 1,
+                Arrow::Down => pos.y += 1,
             }
             let tiles = &*self.tiles.borrow();
-            // Coord.{x,y} are u8 so guaranteed >= 0
-            if coord.x < *self.columns.borrow()
-                && coord.y < *self.rows.borrow()
-                && tiles[coord.x as usize][coord.y as usize].is_some()
+            // Pos.{x,y} are usize so guaranteed >= 0
+            if pos.x < size.columns
+                && pos.y < size.rows
+                && tiles[pos.x][pos.y].is_some()
             {
-                *self.selected.borrow_mut() = Some(coord);
+                *self.selected.borrow_mut() = Some(pos);
             }
         }
         self.widget.redraw();
@@ -133,9 +131,9 @@ impl Board {
         if *self.drawing.borrow() || *self.game_over.borrow() {
             return;
         }
-        let coord = *self.selected.borrow();
-        if let Some(coord) = coord {
-            self.delete_tile(coord);
+        let pos = *self.selected.borrow();
+        if let Some(pos) = pos {
+            self.delete_tile(pos);
         }
     }
 
@@ -147,70 +145,65 @@ impl Board {
         let x = (fltk::app::event_x() - self.widget.x()) / tile_width;
         let y = (fltk::app::event_y() - self.widget.y()) / tile_height;
         *self.selected.borrow_mut() = None;
-        self.delete_tile(Coord::new(x as u8, y as u8));
+        self.delete_tile(Pos::new(x as usize, y as usize));
     }
 
     fn get_tile_size(&self) -> (i32, i32) {
-        let columns = *self.columns.borrow() as i32;
-        let rows = *self.rows.borrow() as i32;
+        let size = *self.size.borrow();
         board_util::get_tile_size(
-            columns,
-            rows,
+            size.columns as i32,
+            size.rows as i32,
             self.widget.width(),
             self.widget.height(),
         )
     }
 
-    fn delete_tile(&mut self, coord: Coord) {
-        dbg!();
-        let color =
-            self.tiles.borrow()[coord.x as usize][coord.y as usize];
+    fn delete_tile(&mut self, pos: Pos) {
+        let color = self.tiles.borrow()[pos.x][pos.y];
         if color.is_none() {
             return;
         }
         let color = color.unwrap();
-        if !self.is_legal(&coord, color.clone()) {
+        if !self.is_legal(&pos, color.clone()) {
             return;
         }
-        self.dim_adjoining(&coord, &color);
+        self.dim_adjoining(&pos, &color);
     }
 
-    fn is_legal(&self, coord: &Coord, color: Color) -> bool {
+    fn is_legal(&self, pos: &Pos, color: Color) -> bool {
         // A legal click is on a colored tile that is adjacent to another
         // tile of the same color.
         let tiles = &*self.tiles.borrow();
-        let x = coord.x as usize;
-        let y = coord.y as usize;
+        let x = pos.x;
+        let y = pos.y;
         let color = Some(color);
-        let columns = *self.columns.borrow() as usize;
-        let rows = *self.rows.borrow() as usize;
+        let size = *self.size.borrow();
         if x > 0 && tiles[x - 1][y] == color {
             return true;
         }
-        if x + 1 < columns && tiles[x + 1][y] == color {
+        if x + 1 < size.columns && tiles[x + 1][y] == color {
             return true;
         }
         if y > 0 && tiles[x][y - 1] == color {
             return true;
         }
-        if y + 1 < rows && tiles[x][y + 1] == color {
+        if y + 1 < size.rows && tiles[x][y + 1] == color {
             return true;
         }
         false
     }
 
-    fn dim_adjoining(&mut self, coord: &Coord, color: &Color) {
-        dbg!();
+    fn dim_adjoining(&mut self, pos: &Pos, color: &Color) {
         self.adjoining.borrow_mut().clear();
-        self.populate_adjoining(*coord, *color);
+        self.populate_adjoining(*pos, *color);
         *self.score.borrow_mut() += (self.adjoining.borrow().len()
             as u16)
             .pow(*self.maxcolors.borrow() as u32 - 2);
         self.sender.send(Action::UpdatedScore(*self.score.borrow()));
         let tiles = &mut *self.tiles.borrow_mut();
-        for &coord in self.adjoining.borrow().iter() {
-            let x = coord.x as usize;
-            let y = coord.y as usize;
+        for &pos in self.adjoining.borrow().iter() {
+            let x = pos.x;
+            let y = pos.y;
             tiles[x][y] = Some(tiles[x][y].unwrap().darker());
         }
         fltk::app::sleep(TINY_DELAY);
@@ -224,43 +217,34 @@ impl Board {
         );
     }
 
-    fn populate_adjoining(&self, coord: Coord, color: Color) {
-        dbg!();
-        let columns = *self.columns.borrow() as usize;
-        let rows = *self.rows.borrow() as usize;
-        let x = coord.x as usize;
-        let y = coord.y as usize;
-        if x >= columns || y >= rows {
-            return; // Falled off an edge; Coord.{x,y} cannot be < 0
+    fn populate_adjoining(&self, pos: Pos, color: Color) {
+        let size = *self.size.borrow();
+        let x = pos.x;
+        let y = pos.y;
+        if x >= size.columns || y >= size.rows {
+            return; // Falled off an edge; Pos.{x,y} cannot be < 0
         }
         let tiles = &*self.tiles.borrow();
-        if self.adjoining.borrow().contains(&coord)
+        if self.adjoining.borrow().contains(&pos)
             || tiles[x][y] != Some(color)
         {
             return; // Color doesn't match or already done
         }
-        self.adjoining.borrow_mut().insert(coord);
-        if coord.x > 0 {
-            self.populate_adjoining(
-                Coord::new(coord.x - 1, coord.y),
-                color,
-            );
+        self.adjoining.borrow_mut().insert(pos);
+        if pos.x > 0 {
+            self.populate_adjoining(Pos::new(pos.x - 1, pos.y), color);
         }
-        self.populate_adjoining(Coord::new(coord.x + 1, coord.y), color);
-        if coord.y > 0 {
-            self.populate_adjoining(
-                Coord::new(coord.x, coord.y - 1),
-                color,
-            );
+        self.populate_adjoining(Pos::new(pos.x + 1, pos.y), color);
+        if pos.y > 0 {
+            self.populate_adjoining(Pos::new(pos.x, pos.y - 1), color);
         }
-        self.populate_adjoining(Coord::new(coord.x, coord.y + 1), color);
+        self.populate_adjoining(Pos::new(pos.x, pos.y + 1), color);
     }
 
     pub fn delete_adjoining(&mut self) {
-        dbg!();
         let tiles = &mut *self.tiles.borrow_mut();
-        for &coord in self.adjoining.borrow().iter() {
-            tiles[coord.x as usize][coord.y as usize] = None
+        for &pos in self.adjoining.borrow().iter() {
+            tiles[pos.x][pos.y] = None
         }
         fltk::app::sleep(TINY_DELAY);
         self.widget.redraw();
@@ -274,16 +258,14 @@ impl Board {
     }
 
     pub fn close_up(&mut self) {
-        dbg!();
         self.move_tiles();
         if let Some(mut selected) = *self.selected.borrow_mut() {
-            let x = selected.x as usize;
-            let y = selected.y as usize;
+            let x = selected.x;
+            let y = selected.y;
             let tiles = &*self.tiles.borrow();
             if tiles[x][y].is_none() {
-                let columns = *self.columns.borrow();
-                let rows = *self.rows.borrow();
-                selected = Coord::new(rows / 2, columns / 2);
+                let size = *self.size.borrow();
+                selected = Pos::new(size.rows / 2, size.columns / 2);
             }
         }
         self.widget.redraw();
@@ -291,21 +273,18 @@ impl Board {
     }
 
     fn move_tiles(&mut self) {
-        dbg!();
         let tiles = self.tiles.clone();
-        let columns = *self.columns.borrow() as usize;
-        let rows = *self.rows.borrow() as usize;
+        let size = *self.size.borrow();
         let mut moved = true;
-        let mut moves = CoordForCoord::new();
+        let mut moves = PosForPos::new();
         while moved {
             moved = false;
-            for x in board_util::ripple(columns) {
-                for y in board_util::ripple(rows) {
+            for x in board_util::ripple(size.columns) {
+                for y in board_util::ripple(size.rows) {
                     if tiles.borrow()[x][y].is_some() {
-                        if self.move_if_possible(
-                            Coord::new(x as u8, y as u8),
-                            &mut moves,
-                        ) {
+                        if self
+                            .move_if_possible(Pos::new(x, y), &mut moves)
+                        {
                             moved = true;
                             break;
                         }
@@ -317,31 +296,29 @@ impl Board {
 
     fn move_if_possible(
         &mut self,
-        coord: Coord,
-        moves: &mut CoordForCoord,
+        pos: Pos,
+        moves: &mut PosForPos,
     ) -> bool {
-        let empties = self.get_empty_neighbours(coord);
-        dbg!(&empties);
+        let empties = self.get_empty_neighbours(pos);
         if !empties.is_empty() {
-            let (do_move, new_coord) =
-                self.nearest_to_middle(coord, &empties);
-            if let Some(key_coord) = moves.get(&new_coord) {
-                if key_coord == &coord {
+            let (do_move, new_pos) =
+                self.nearest_to_middle(pos, &empties);
+            if let Some(key_pos) = moves.get(&new_pos) {
+                if key_pos == &pos {
                     return false; // avoid endless loop back and forth
                 }
             }
             if do_move {
                 let tiles = self.tiles.clone();
-                let new_color =
-                    tiles.borrow()[coord.x as usize][coord.y as usize];
+                let new_color = tiles.borrow()[pos.x][pos.y];
                 if let Some(new_color) = new_color {
                     self.sender.send(Action::MoveTile {
-                        new_coord,
+                        new_pos,
                         new_color,
-                        coord,
+                        pos,
                     });
                 }
-                moves.insert(coord, new_coord);
+                moves.insert(pos, new_pos);
                 return true;
             }
         }
@@ -350,15 +327,13 @@ impl Board {
 
     pub fn move_tile(
         &mut self,
-        new_coord: Coord,
+        new_pos: Pos,
         new_color: Color,
-        coord: Coord,
+        pos: Pos,
     ) {
-        dbg!();
         let tiles = &mut *self.tiles.borrow_mut();
-        tiles[new_coord.x as usize][new_coord.y as usize] =
-            Some(new_color);
-        tiles[coord.x as usize][coord.y as usize] = None;
+        tiles[new_pos.x][new_pos.y] = Some(new_color);
+        tiles[pos.x][pos.y] = None;
         let delay = 1.0_f64.max((*self.delay_ms.borrow() / 7000) as f64);
         let sender = self.sender.clone();
         fltk::app::add_timeout(delay, move || {
@@ -366,26 +341,24 @@ impl Board {
         });
     }
 
-    fn get_empty_neighbours(&mut self, coord: Coord) -> CoordSet {
-        dbg!();
-        let columns = *self.columns.borrow() as usize;
-        let rows = *self.rows.borrow() as usize;
-        let mut coords = Vec::with_capacity(4);
-        if coord.x > 0 {
-            coords.push(Coord::new(coord.x - 1, coord.y));
+    fn get_empty_neighbours(&mut self, pos: Pos) -> PosSet {
+        let size = *self.size.borrow();
+        let mut poss = Vec::with_capacity(4);
+        if pos.x > 0 {
+            poss.push(Pos::new(pos.x - 1, pos.y));
         }
-        coords.push(Coord::new(coord.x + 1, coord.y));
-        if coord.y > 0 {
-            coords.push(Coord::new(coord.x, coord.y - 1));
+        poss.push(Pos::new(pos.x + 1, pos.y));
+        if pos.y > 0 {
+            poss.push(Pos::new(pos.x, pos.y - 1));
         }
-        coords.push(Coord::new(coord.x, coord.y + 1));
-        let mut neighbours = CoordSet::new();
+        poss.push(Pos::new(pos.x, pos.y + 1));
+        let mut neighbours = PosSet::new();
         let tiles = self.tiles.clone();
-        for new_coord in coords.iter() {
-            let x = new_coord.x as usize;
-            let y = new_coord.y as usize;
-            if x < columns && y < rows && tiles.borrow()[x][y].is_none() {
-                neighbours.insert(new_coord.clone());
+        for new_pos in poss.iter() {
+            let x = new_pos.x;
+            let y = new_pos.y;
+            if x < size.columns && y < size.rows && tiles.borrow()[x][y].is_none() {
+                neighbours.insert(new_pos.clone());
             }
         }
         neighbours
@@ -393,52 +366,50 @@ impl Board {
 
     fn nearest_to_middle(
         &self,
-        coord: Coord,
-        empties: &CoordSet,
-    ) -> (bool, Coord) {
-        dbg!();
+        pos: Pos,
+        empties: &PosSet,
+    ) -> (bool, Pos) {
         let tiles = self.tiles.clone();
-        let color =
-            tiles.borrow()[coord.x as usize][coord.y as usize].unwrap();
-        let x_mid = (*self.columns.borrow() as u8) / 2;
-        let y_mid = (*self.rows.borrow() as u8) / 2;
+        let color = tiles.borrow()[pos.x][pos.y].unwrap();
+        let size = *self.size.borrow();
+        let x_mid = size.columns / 2;
+        let y_mid = size.rows / 2;
         let d_old =
-            ((x_mid - coord.x) as f64).hypot((y_mid - coord.y) as f64);
+            ((x_mid - pos.x) as f64).hypot((y_mid - pos.y) as f64);
         let mut heap = BinaryHeap::new();
-        for new_coord in empties.iter() {
-            if self.is_square(&new_coord) {
-                let mut d_new = ((x_mid - new_coord.x) as f64)
-                    .hypot((y_mid - new_coord.y) as f64);
-                if self.is_legal(&new_coord, color) {
+        for new_pos in empties.iter() {
+            if self.is_square(&new_pos) {
+                let mut d_new = ((x_mid - new_pos.x) as f64)
+                    .hypot((y_mid - new_pos.y) as f64);
+                if self.is_legal(&new_pos, color) {
                     d_new -= 0.1; // Make same colors slightly attractive
                 }
                 heap.push(Reverse(HeapElement::new(
                     d_new,
-                    new_coord.clone(),
+                    new_pos.clone(),
                 )));
             }
         }
         if let Some(Reverse(element)) = heap.pop() {
             if d_old > element.d {
-                return (true, element.coord);
+                return (true, element.pos);
             }
         }
-        (false, coord)
+        (false, pos)
     }
 
-    fn is_square(&self, coord: &Coord) -> bool {
-        let columns = *self.columns.borrow() as usize;
-        let rows = *self.rows.borrow() as usize;
-        let x = coord.x as usize;
-        let y = coord.y as usize;
+    fn is_square(&self, pos: &Pos) -> bool {
+        let size = *self.size.borrow();
+        let x = pos.x;
+        let y = pos.y;
         let tiles = &*self.tiles.borrow();
         if x > 0 && tiles[x - 1][y].is_some() {
             true
-        } else if x + 1 < columns && tiles[x + 1][y].is_some() {
+        } else if x + 1 < size.columns && tiles[x + 1][y].is_some() {
             true
         } else if y > 0 && tiles[x][y - 1].is_some() {
             true
-        } else if y + 1 < rows && tiles[x][y + 1].is_some() {
+        } else if y + 1 < size.rows && tiles[x][y + 1].is_some() {
             true
         } else {
             false
@@ -489,8 +460,7 @@ fn add_draw_handler(board: &mut Board) {
     let game_over = board.game_over.clone();
     let selected = board.selected.clone();
     let tiles = board.tiles.clone();
-    let columns = board.columns.clone();
-    let rows = board.rows.clone();
+    let size = board.size.clone();
     board.widget.draw(move |widget| {
         if *drawing.borrow() || *game_over.borrow() {
             return;
@@ -507,8 +477,7 @@ fn add_draw_handler(board: &mut Board) {
             y1,
             width,
             height,
-            *columns.borrow(),
-            *rows.borrow(),
+            *size.borrow(),
             &*tiles.borrow(),
             *selected.borrow(),
         );

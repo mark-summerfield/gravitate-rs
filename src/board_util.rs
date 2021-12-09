@@ -12,12 +12,12 @@ pub type Tiles = Vec<Vec<Option<Color>>>;
 #[derive(Copy, Clone, Debug, PartialOrd)]
 pub struct HeapElement {
     pub d: f64,
-    pub coord: Coord,
+    pub pos: Pos,
 }
 
 impl HeapElement {
-    pub fn new(d: f64, coord: Coord) -> Self {
-        Self { d, coord }
+    pub fn new(d: f64, pos: Pos) -> Self {
+        Self { d, pos }
     }
 }
 
@@ -41,19 +41,31 @@ impl Ord for HeapElement {
 
 impl Eq for HeapElement {}
 
-#[derive(Copy, Clone, Debug, PartialEq, Eq, Hash, PartialOrd, Ord)]
-pub struct Coord {
-    pub x: u8,
-    pub y: u8,
+#[derive(Copy, Clone, Debug, Default)]
+pub struct Size {
+    pub columns: usize,
+    pub rows: usize,
 }
 
-impl Coord {
-    pub fn new(x: u8, y: u8) -> Self {
+impl Size {
+    pub fn new(columns: usize, rows: usize) -> Self {
+        Self { columns, rows }
+    }
+}
+
+#[derive(Copy, Clone, Debug, PartialEq, Eq, Hash, PartialOrd, Ord)]
+pub struct Pos {
+    pub x: usize,
+    pub y: usize,
+}
+
+impl Pos {
+    pub fn new(x: usize, y: usize) -> Self {
         Self { x, y }
     }
 }
 
-impl std::fmt::Display for Coord {
+impl std::fmt::Display for Pos {
     fn fmt(&self, out: &mut std::fmt::Formatter) -> fmt::Result {
         write!(out, "({},{})", self.x, self.y)
     }
@@ -80,23 +92,20 @@ pub fn draw_tiles(
     y1: i32,
     width: i32,
     height: i32,
-    columns: u8,
-    rows: u8,
+    size: Size,
     tiles: &Vec<Vec<Option<Color>>>,
-    selected: Option<Coord>,
+    selected: Option<Pos>,
 ) {
     let (tile_width, tile_height) =
-        get_tile_size(columns as i32, rows as i32, width, height);
-    for column in 0..columns as usize {
+        get_tile_size(size.columns as i32, size.rows as i32, width, height);
+    for column in 0..size.columns {
         let x = x1 + (tile_width * column as i32);
-        for row in 0..rows as usize {
+        for row in 0..size.rows {
             let y = y1 + (tile_height * row as i32);
             if let Some(color) = tiles[column][row] {
                 draw_tile(x, y, tile_width, tile_height, color);
-                if let Some(coord) = selected {
-                    if coord.x as usize == column
-                        && coord.y as usize == row
-                    {
+                if let Some(pos) = selected {
+                    if pos.x == column && pos.y == row {
                         draw_focus(x, y, tile_width, tile_height);
                     }
                 }
