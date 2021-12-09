@@ -10,26 +10,26 @@ pub type Tiles = Vec<Vec<Option<Color>>>;
 
 #[derive(Copy, Clone, Debug, Default)]
 pub struct Size {
-    pub columns: usize,
-    pub rows: usize,
+    pub columns: i32,
+    pub rows: i32,
 }
 
 impl Size {
-    pub fn new(columns: usize, rows: usize) -> Self {
+    pub fn new(columns: i32, rows: i32) -> Self {
         Self { columns, rows }
     }
 }
 
 #[derive(Copy, Clone, Debug, PartialEq, Eq, Hash, PartialOrd, Ord)]
 pub struct Pos {
-    pub x: usize,
-    pub y: usize,
+    pub x: i32,
+    pub y: i32,
 }
 
 impl Pos {
-    pub const INVALID: usize = usize::MAX;
+    pub const INVALID: i32 = -1;
 
-    pub fn new(x: usize, y: usize) -> Self {
+    pub fn new(x: i32, y: i32) -> Self {
         Self { x, y }
     }
 
@@ -85,7 +85,7 @@ pub fn draw_tiles(
         let x = x1 + (tile_width * column as i32);
         for row in 0..size.rows {
             let y = y1 + (tile_height * row as i32);
-            if let Some(color) = tiles[column][row] {
+            if let Some(color) = tiles[column as usize][row as usize] {
                 draw_tile(x, y, tile_width, tile_height, color);
                 if let Some(pos) = selected {
                     if pos.x == column && pos.y == row {
