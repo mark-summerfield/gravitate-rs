@@ -173,23 +173,21 @@ impl Board {
         // A legal click is on a colored tile that is adjacent to another
         // tile of the same color.
         let tiles = &*self.tiles.borrow();
+        let size = *self.size.borrow();
         let x = pos.x;
         let y = pos.y;
         let color = Some(color);
-        let size = *self.size.borrow();
         if x > 0 && tiles[x - 1][y] == color {
-            return true;
+            true
+        } else if x + 1 < size.columns && tiles[x + 1][y] == color {
+            true
+        } else if y > 0 && tiles[x][y - 1] == color {
+            true
+        } else if y + 1 < size.rows && tiles[x][y + 1] == color {
+            true
+        } else {
+            false
         }
-        if x + 1 < size.columns && tiles[x + 1][y] == color {
-            return true;
-        }
-        if y > 0 && tiles[x][y - 1] == color {
-            return true;
-        }
-        if y + 1 < size.rows && tiles[x][y + 1] == color {
-            return true;
-        }
-        false
     }
 
     fn dim_adjoining(&mut self, pos: &Pos, color: &Color) {
@@ -200,9 +198,9 @@ impl Board {
             .pow(*self.maxcolors.borrow() as u32 - 2);
         self.sender.send(Action::UpdatedScore(*self.score.borrow()));
         let tiles = &mut *self.tiles.borrow_mut();
-        for &pos in self.adjoining.borrow().iter() {
-            let x = pos.x;
-            let y = pos.y;
+        for &adjoining_pos in self.adjoining.borrow().iter() {
+            let x = adjoining_pos.x;
+            let y = adjoining_pos.y;
             tiles[x][y] = Some(tiles[x][y].unwrap().darker());
         }
         fltk::app::sleep(TINY_DELAY);
@@ -220,9 +218,6 @@ impl Board {
         let size = *self.size.borrow();
         let x = pos.x;
         let y = pos.y;
-        if x >= size.columns || y >= size.rows {
-            return; // Falled off an edge; Pos.{x,y} cannot be < 0
-        }
         let tiles = &*self.tiles.borrow();
         if self.adjoining.borrow().contains(&pos)
             || tiles[x][y] != Some(color)
@@ -230,14 +225,18 @@ impl Board {
             return; // Color doesn't match or already done
         }
         self.adjoining.borrow_mut().insert(pos);
-        if pos.x > 0 {
-            self.populate_adjoining(Pos::new(pos.x - 1, pos.y), color);
+        if x > 0 {
+            self.populate_adjoining(Pos::new(x - 1, y), color);
         }
-        self.populate_adjoining(Pos::new(pos.x + 1, pos.y), color);
-        if pos.y > 0 {
-            self.populate_adjoining(Pos::new(pos.x, pos.y - 1), color);
+        if x + 1 < size.columns {
+            self.populate_adjoining(Pos::new(x + 1, y), color);
         }
-        self.populate_adjoining(Pos::new(pos.x, pos.y + 1), color);
+        if y > 0 {
+            self.populate_adjoining(Pos::new(x, y - 1), color);
+        }
+        if y + 1 < size.rows {
+            self.populate_adjoining(Pos::new(x, y + 1), color);
+        }
     }
 
     pub fn delete_adjoining(&mut self) {
@@ -245,6 +244,7 @@ impl Board {
         for &pos in self.adjoining.borrow().iter() {
             tiles[pos.x][pos.y] = None
         }
+        self.adjoining.borrow_mut().clear();
         fltk::app::sleep(TINY_DELAY);
         self.widget.redraw();
         let sender = self.sender.clone();
@@ -311,12 +311,8 @@ impl Board {
                 let tiles = &mut *self.tiles.borrow_mut();
                 tiles[new_pos.x][new_pos.y] = tiles[pos.x][pos.y];
                 tiles[pos.x][pos.y] = None;
-                let delay =
-                    1.0_f64.max((*self.delay_ms.borrow() / 1000) as f64);
-                let sender = self.sender.clone();
-                fltk::app::add_timeout(delay, move || {
-                    sender.send(Action::Redraw);
-                });
+                fltk::app::sleep(TINY_DELAY);
+                self.widget.redraw();
                 moves.insert(pos, new_pos);
                 return true;
             }
@@ -391,9 +387,9 @@ impl Board {
     }
 
     fn is_square(&self, pos: &Pos) -> bool {
-        let size = *self.size.borrow();
         let x = pos.x;
         let y = pos.y;
+        let size = *self.size.borrow();
         let tiles = &*self.tiles.borrow();
         if x > 0 && tiles[x - 1][y].is_some() {
             true
@@ -406,10 +402,6 @@ impl Board {
         } else {
             false
         }
-    }
-
-    pub fn redraw(&mut self) {
-        self.widget.redraw();
     }
 }
 

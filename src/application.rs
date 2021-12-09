@@ -48,19 +48,34 @@ impl Application {
                     Action::About => self.on_about(),
                     Action::Help => self.on_help(),
                     Action::Quit => self.on_quit(),
-                    Action::MoveUp => self.board.on_arrow(Arrow::Up),
-                    Action::MoveDown => self.board.on_arrow(Arrow::Down),
-                    Action::MoveLeft => self.board.on_arrow(Arrow::Left),
+                    Action::MoveUp => {
+                        self.clear_status();
+                        self.board.on_arrow(Arrow::Up);
+                    }
+                    Action::MoveDown => {
+                        self.clear_status();
+                        self.board.on_arrow(Arrow::Down);
+                    }
+                    Action::MoveLeft => {
+                        self.clear_status();
+                        self.board.on_arrow(Arrow::Left);
+                    }
                     Action::MoveRight => {
+                        self.clear_status();
                         self.board.on_arrow(Arrow::Right)
                     }
-                    Action::ClickTile => self.board.on_click_tile(),
-                    Action::PressTile => self.board.on_press_tile(),
+                    Action::ClickTile => {
+                        self.clear_status();
+                        self.board.on_click_tile();
+                    }
+                    Action::PressTile => {
+                        self.clear_status();
+                        self.board.on_press_tile();
+                    }
                     Action::DeleteAdjoining => {
                         self.board.delete_adjoining()
                     }
                     Action::CloseUp => self.board.close_up(),
-                    Action::Redraw => self.board.redraw(),
                     Action::UpdatedScore(score) => {
                         self.updated_score(score)
                     }
