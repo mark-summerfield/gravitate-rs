@@ -8,7 +8,6 @@ use crate::board;
 use crate::fixed::{Arrow, MESSAGE_DELAY};
 use crate::mainwindow;
 use fltk::prelude::*;
-use std::cmp::Ordering;
 use thousands::Separable;
 
 pub struct Application {
@@ -85,7 +84,6 @@ impl Application {
                     }
                     Action::Redraw => self.board.redraw(),
                     Action::GameOver => self.game_over(),
-                    Action::UserWon => self.user_won(),
                 }
             }
         }
@@ -132,25 +130,7 @@ impl Application {
     }
 
     fn game_over(&mut self) {
-        self.set_status("Game Over", Some(MESSAGE_DELAY));
-    }
-
-    fn user_won(&mut self) {
-        let highscore = {
-            let config = CONFIG.get().read().unwrap();
-            config.board_highscore
-        };
-        let message = match self.score.cmp(&highscore) {
-            Ordering::Less => "You Won!",
-            Ordering::Equal => "You Won Equaling Highscore!",
-            Ordering::Greater => {
-                let mut config = CONFIG.get().write().unwrap();
-                config.board_highscore = self.score;
-                "You Won — New Highscore!"
-            }
-        };
-        self.updated_score(self.score);
-        self.set_status(message, Some(MESSAGE_DELAY));
+        self.set_status("Click New or press n to play…", None);
     }
 
     fn set_status(&mut self, message: &str, timeout: Option<f64>) {

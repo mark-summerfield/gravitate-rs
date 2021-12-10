@@ -8,11 +8,11 @@ pub const BACKGROUND_COLOR: Color = Color::BackGround;
 
 pub type Tiles = Vec<Vec<Option<Color>>>;
 
-#[derive(PartialEq, Eq)]
+#[derive(Debug, PartialEq, Eq)]
 pub enum Mode {
     Playing,
     GameOver,
-    UserWon,
+    UserWon(bool), // true if new highscore
 }
 
 #[derive(Copy, Clone, Debug, Default)]

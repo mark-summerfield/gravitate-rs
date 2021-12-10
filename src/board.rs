@@ -18,7 +18,6 @@ type PosForPos = HashMap<Pos, Pos>;
 
 pub struct Board {
     widget: fltk::widget::Widget,
-    drawing: Rc<RefCell<bool>>,
     mode: Rc<RefCell<Mode>>,
     selected: Rc<RefCell<Option<Pos>>>,
     tiles: Rc<RefCell<Tiles>>,
@@ -34,7 +33,6 @@ impl Board {
     pub fn new(sender: fltk::app::Sender<Action>) -> Self {
         let mut board = Board {
             widget: fltk::widget::Widget::default(),
-            drawing: Rc::default(),
             mode: Rc::new(RefCell::new(Mode::GameOver)),
             selected: Rc::default(),
             tiles: Rc::default(),
@@ -51,7 +49,6 @@ impl Board {
     }
 
     pub fn new_game(&mut self) {
-        *self.drawing.borrow_mut() = true;
         *self.mode.borrow_mut() = Mode::Playing;
         *self.selected.borrow_mut() = None;
         *self.score.borrow_mut() = 0;
@@ -63,7 +60,6 @@ impl Board {
         *self.maxcolors.borrow_mut() = config.board_maxcolors;
         *self.delay_ms.borrow_mut() = config.board_delay_ms;
         *self.tiles.borrow_mut() = self.get_tiles();
-        *self.drawing.borrow_mut() = false;
         self.sender.send(Action::UpdatedScore(*self.score.borrow()));
         self.widget.redraw();
     }
@@ -93,8 +89,7 @@ impl Board {
     }
 
     pub fn on_arrow(&mut self, arrow: Arrow) {
-        if *self.drawing.borrow() || *self.mode.borrow() != Mode::Playing
-        {
+        if *self.mode.borrow() != Mode::Playing {
             return;
         }
         let size = *self.size.borrow();
@@ -125,8 +120,7 @@ impl Board {
     }
 
     pub fn on_press_tile(&mut self) {
-        if *self.drawing.borrow() || *self.mode.borrow() != Mode::Playing
-        {
+        if *self.mode.borrow() != Mode::Playing {
             return;
         }
         let pos = *self.selected.borrow();
@@ -136,8 +130,7 @@ impl Board {
     }
 
     pub fn on_click_tile(&mut self) {
-        if *self.drawing.borrow() || *self.mode.borrow() != Mode::Playing
-        {
+        if *self.mode.borrow() != Mode::Playing {
             return;
         }
         let (tile_width, tile_height) = self.get_tile_size();
@@ -408,17 +401,22 @@ impl Board {
     }
 
     pub fn check_game_over(&mut self) {
+        let highscore = {
+            let config = CONFIG.get().read().unwrap();
+            config.board_highscore
+        };
+        let score = *self.score.borrow();
         let (user_won, can_move) = self.check_tiles();
         *self.mode.borrow_mut() = if user_won {
-            Mode::UserWon
+            let mut config = CONFIG.get().write().unwrap();
+            config.board_highscore = score;
+            Mode::UserWon(score > highscore)
         } else if can_move {
             Mode::Playing
         } else {
             Mode::GameOver
         };
-        if user_won {
-            self.sender.send(Action::UserWon);
-        } else if !can_move {
+        if !can_move {
             let size = *self.size.borrow();
             let tiles = &mut *self.tiles.borrow_mut();
             for column in 0..size.columns {
@@ -430,6 +428,8 @@ impl Board {
                     }
                 }
             }
+        }
+        if *self.mode.borrow() != Mode::Playing {
             self.sender.send(Action::GameOver);
         }
         self.widget.redraw();
@@ -485,10 +485,9 @@ fn add_event_handler(
     board: &mut Board,
     sender: fltk::app::Sender<Action>,
 ) {
-    let drawing = board.drawing.clone();
     let mode = board.mode.clone();
     board.widget.handle(move |_, event| {
-        if *drawing.borrow() || *mode.borrow() != Mode::Playing {
+        if *mode.borrow() != Mode::Playing {
             return false;
         }
         match event {
@@ -502,16 +501,11 @@ fn add_event_handler(
 }
 
 fn add_draw_handler(board: &mut Board) {
-    let drawing = board.drawing.clone();
     let mode = board.mode.clone();
     let selected = board.selected.clone();
     let tiles = board.tiles.clone();
     let size = board.size.clone();
     board.widget.draw(move |widget| {
-        if *drawing.borrow() {
-            return;
-        }
-        *drawing.borrow_mut() = true;
         let width = widget.width();
         let height = widget.height();
         let x1 = widget.x();
@@ -527,33 +521,71 @@ fn add_draw_handler(board: &mut Board) {
             &*tiles.borrow(),
             *selected.borrow(),
         );
-        if *mode.borrow() != Mode::Playing {
-            fltk::draw::set_font(fltk::enums::Font::TimesBoldItalic, 48);
-            if *mode.borrow() == Mode::GameOver {
-                fltk::draw::set_draw_color(Color::Green);
-                fltk::draw::draw_text2(
-                    "Game Over!",
-                    x1,
-                    y1,
-                    width,
-                    height,
-                    fltk::enums::Align::Center,
-                );
-            } else if *mode.borrow() == Mode::UserWon {
-                fltk::draw::set_draw_color(Color::Red);
-                fltk::draw::draw_text2(
-                    "You Won!",
-                    x1,
-                    y1,
-                    width,
-                    height,
-                    fltk::enums::Align::Center,
-                );
+        match *mode.borrow() {
+            Mode::Playing => (),
+            Mode::GameOver => draw_game_over(x1, y1, width, height),
+            Mode::UserWon(is_new_highscore) => {
+                draw_user_won(x1, y1, width, height, is_new_highscore)
             }
-            fltk::draw::set_draw_color(Color::Black);
         }
         // *MUST* restore the line style after custom drawing
         fltk::draw::set_line_style(fltk::draw::LineStyle::Solid, 0);
-        *drawing.borrow_mut() = false;
     });
+}
+
+fn draw_game_over(x1: i32, y1: i32, width: i32, height: i32) {
+    fltk::draw::set_font(fltk::enums::Font::TimesBoldItalic, 48);
+    fltk::draw::set_draw_color(Color::White);
+    fltk::draw::draw_text2(
+        "Game Over!",
+        x1,
+        y1,
+        width,
+        height,
+        fltk::enums::Align::Center,
+    );
+    fltk::draw::set_draw_color(Color::Green);
+    fltk::draw::draw_text2(
+        "Game Over!",
+        x1 - 2,
+        y1 - 2,
+        width,
+        height,
+        fltk::enums::Align::Center,
+    );
+    fltk::draw::set_draw_color(Color::Black);
+}
+
+fn draw_user_won(
+    x1: i32,
+    y1: i32,
+    width: i32,
+    height: i32,
+    is_new_highscore: bool,
+) {
+    let message = if is_new_highscore {
+        "You Won!\n\nNew\nHighscore"
+    } else {
+        "You Won!"
+    };
+    fltk::draw::set_font(fltk::enums::Font::TimesBoldItalic, 48);
+    fltk::draw::set_draw_color(Color::White);
+    fltk::draw::draw_text2(
+        message,
+        x1,
+        y1,
+        width,
+        height,
+        fltk::enums::Align::Center,
+    );
+    fltk::draw::set_draw_color(Color::Red);
+    fltk::draw::draw_text2(
+        message,
+        x1 - 2,
+        y1 - 2,
+        width,
+        height,
+        fltk::enums::Align::Center,
+    );
+    fltk::draw::set_draw_color(Color::Black);
 }

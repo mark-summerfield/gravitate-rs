@@ -19,5 +19,4 @@ pub enum Action {
     Redraw,
     UpdatedScore(u16),
     GameOver,
-    UserWon,
 }
