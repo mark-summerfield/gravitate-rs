@@ -77,12 +77,7 @@ impl Board {
         for column in 0..size.columns {
             tiles.push(Vec::with_capacity(size.rows as usize));
             for _ in 0..size.rows {
-                let color = colors.choose(&mut rng);
-                let color = if color.is_some() {
-                    Some(color.unwrap().clone()) // Want Color not &Color
-                } else {
-                    None
-                };
+                let color = colors.choose(&mut rng).copied();
                 tiles[column as usize].push(color);
             }
         }
@@ -107,7 +102,7 @@ impl Board {
             *self.selected.borrow_mut() =
                 Some(Pos::new(size.columns / 2, size.rows / 2));
         } else {
-            let mut pos = self.selected.borrow().unwrap().clone();
+            let mut pos = self.selected.borrow().unwrap();
             match arrow {
                 Arrow::Left => pos.x -= 1,
                 Arrow::Right => pos.x += 1,
@@ -166,7 +161,7 @@ impl Board {
             return;
         }
         let color = color.unwrap();
-        if !self.is_legal(&pos, color.clone()) {
+        if !self.is_legal(&pos, color) {
             return;
         }
         self.dim_adjoining(&pos, &color);
@@ -180,19 +175,10 @@ impl Board {
         let x = pos.x as usize;
         let y = pos.y as usize;
         let color = Some(color);
-        if x > 0 && tiles[x - 1][y] == color {
-            true
-        } else if x + 1 < size.columns as usize
-            && tiles[x + 1][y] == color
-        {
-            true
-        } else if y > 0 && tiles[x][y - 1] == color {
-            true
-        } else if y + 1 < size.rows as usize && tiles[x][y + 1] == color {
-            true
-        } else {
-            false
-        }
+        (x > 0 && tiles[x - 1][y] == color)
+            || (x + 1 < size.columns as usize && tiles[x + 1][y] == color)
+            || (y > 0 && tiles[x][y - 1] == color)
+            || (y + 1 < size.rows as usize && tiles[x][y + 1] == color)
     }
 
     fn dim_adjoining(&mut self, pos: &Pos, color: &Color) {
@@ -210,6 +196,7 @@ impl Board {
         }
         fltk::app::sleep(TINY_DELAY);
         self.widget.redraw();
+        #[allow(clippy::clone_on_copy)] // The clone is needed
         let sender = self.sender.clone();
         fltk::app::add_timeout(
             *self.delay_ms.borrow() as f64 / 1000.0,
@@ -247,6 +234,7 @@ impl Board {
         self.adjoining.borrow_mut().clear();
         fltk::app::sleep(TINY_DELAY);
         self.widget.redraw();
+        #[allow(clippy::clone_on_copy)] // The clone is needed
         let sender = self.sender.clone();
         fltk::app::add_timeout(
             *self.delay_ms.borrow() as f64 / 1000.0,
@@ -284,6 +272,7 @@ impl Board {
             moved = false;
             for x in board_util::ripple(size.columns as usize) {
                 for y in board_util::ripple(size.rows as usize) {
+                    #[allow(clippy::collapsible_if)] // Clippy is wrong
                     if tiles.borrow()[x][y].is_some() {
                         if self.move_if_possible(
                             Pos::new(x as i32, y as i32),
@@ -321,6 +310,7 @@ impl Board {
                 tiles[x][y] = None;
                 already_moved.insert(pos, new_pos);
                 let delay = *self.delay_ms.borrow() as f64 / 7000.0;
+                #[allow(clippy::clone_on_copy)] // The clone is needed
                 let sender = self.sender.clone();
                 fltk::app::add_timeout(delay, move || {
                     sender.send(Action::Redraw);
@@ -356,7 +346,7 @@ impl Board {
                 && tiles.borrow()[new_pos.x as usize][new_pos.y as usize]
                     .is_none()
             {
-                neighbours.insert(new_pos.clone());
+                neighbours.insert(*new_pos);
             }
         }
         neighbours
@@ -380,17 +370,17 @@ impl Board {
         for new_pos in empties.iter() {
             let nx = new_pos.x;
             let ny = new_pos.y;
-            if self.is_square(&new_pos) {
+            if self.is_square(new_pos) {
                 let mut new_radius =
                     ((mid_x - nx) as f64).hypot((mid_y - ny) as f64);
-                if self.is_legal(&new_pos, color) {
+                if self.is_legal(new_pos, color) {
                     // Make same colors slightly attractive
                     new_radius -= 0.1;
                 }
                 if !radius_pos.is_valid() || shortest_radius > new_radius
                 {
                     shortest_radius = new_radius;
-                    radius_pos = new_pos.clone();
+                    radius_pos = *new_pos;
                 }
             }
         }
@@ -406,21 +396,12 @@ impl Board {
         let y = pos.y;
         let size = *self.size.borrow();
         let tiles = &*self.tiles.borrow();
-        if x > 0 && tiles[x as usize - 1][y as usize].is_some() {
-            true
-        } else if x + 1 < size.columns
-            && tiles[x as usize + 1][y as usize].is_some()
-        {
-            true
-        } else if y > 0 && tiles[x as usize][y as usize - 1].is_some() {
-            true
-        } else if y + 1 < size.rows
-            && tiles[x as usize][y as usize + 1].is_some()
-        {
-            true
-        } else {
-            false
-        }
+        (x > 0 && tiles[x as usize - 1][y as usize].is_some())
+            || (x + 1 < size.columns
+                && tiles[x as usize + 1][y as usize].is_some())
+            || (y > 0 && tiles[x as usize][y as usize - 1].is_some())
+            || (y + 1 < size.rows
+                && tiles[x as usize][y as usize + 1].is_some())
     }
 
     pub fn check_game_over(&mut self) {
@@ -458,7 +439,7 @@ impl Board {
                     if let Some(count) = count_for_color.get_mut(&color) {
                         *count += 1;
                     } else {
-                        count_for_color.insert(color.clone(), 1);
+                        count_for_color.insert(color, 1);
                     }
                     user_won = false;
                     if self.is_legal(&Pos::new(column, row), color) {

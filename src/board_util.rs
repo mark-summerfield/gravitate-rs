@@ -72,7 +72,7 @@ pub fn draw_tiles(
     width: i32,
     height: i32,
     size: Size,
-    tiles: &Vec<Vec<Option<Color>>>,
+    tiles: &[Vec<Option<Color>>],
     selected: Option<Pos>,
 ) {
     let (tile_width, tile_height) = get_tile_size(
