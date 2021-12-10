@@ -9,11 +9,12 @@ use fltk::enums::Color;
 use fltk::prelude::*;
 use rand::seq::SliceRandom;
 use std::cell::RefCell;
-use std::collections::HashSet;
+use std::collections::{HashMap, HashSet};
 use std::ops::{Deref, DerefMut};
 use std::rc::Rc;
 
 type PosSet = HashSet<Pos>;
+type PosForPos = HashMap<Pos, Pos>;
 
 pub struct Board {
     widget: fltk::widget::Widget,
@@ -274,14 +275,16 @@ impl Board {
         let tiles = self.tiles.clone();
         let size = *self.size.borrow();
         let mut moved = true;
+        let mut already_moved = PosForPos::new();
         while moved {
             moved = false;
             for x in board_util::ripple(size.columns as usize) {
                 for y in board_util::ripple(size.rows as usize) {
                     if tiles.borrow()[x][y].is_some() {
-                        if self.move_if_possible(Pos::new(
-                            x as i32, y as i32,
-                        )) {
+                        if self.move_if_possible(
+                            Pos::new(x as i32, y as i32),
+                            &mut already_moved,
+                        ) {
                             moved = true;
                             break;
                         }
@@ -291,11 +294,20 @@ impl Board {
         }
     }
 
-    fn move_if_possible(&mut self, pos: Pos) -> bool {
+    fn move_if_possible(
+        &mut self,
+        pos: Pos,
+        already_moved: &mut PosForPos,
+    ) -> bool {
         let empties = self.get_empty_neighbours(pos);
         if !empties.is_empty() {
             let (do_move, new_pos) =
                 self.nearest_to_middle(pos, &empties);
+            if let Some(value) = already_moved.get(&new_pos) {
+                if value == &pos {
+                    return false; // avoid endless loop back and forth
+                }
+            }
             if do_move {
                 let tiles = &mut *self.tiles.borrow_mut();
                 let x = pos.x as usize;
@@ -303,6 +315,7 @@ impl Board {
                 tiles[new_pos.x as usize][new_pos.y as usize] =
                     tiles[x][y];
                 tiles[x][y] = None;
+                already_moved.insert(pos, new_pos);
                 let sender = self.sender.clone();
                 fltk::app::add_timeout(0.05, move || {
                     sender.send(Action::Redraw);
