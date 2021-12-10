@@ -8,6 +8,13 @@ pub const BACKGROUND_COLOR: Color = Color::BackGround;
 
 pub type Tiles = Vec<Vec<Option<Color>>>;
 
+#[derive(PartialEq, Eq)]
+pub enum Mode {
+    Playing,
+    GameOver,
+    UserWon,
+}
+
 #[derive(Copy, Clone, Debug, Default)]
 pub struct Size {
     pub columns: i32,
@@ -106,7 +113,13 @@ fn draw_tile(x: i32, y: i32, width: i32, height: i32, color: Color) {
         height,
         color,
     );
-    fltk::draw::draw_rect_with_color(x, y, width, height, BACKGROUND_COLOR);
+    fltk::draw::draw_rect_with_color(
+        x,
+        y,
+        width,
+        height,
+        BACKGROUND_COLOR,
+    );
 }
 
 fn draw_focus(x: i32, y: i32, width: i32, height: i32) {
