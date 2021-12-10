@@ -135,10 +135,19 @@ impl Application {
     }
 
     fn user_won(&mut self) {
-        // TODO
-        // if new high score, save & change message to
-        //  "You Won with a New Highscore!"
-        self.set_status("You Won!", Some(MESSAGE_DELAY));
+        let highscore = {
+            let config = CONFIG.get().read().unwrap();
+            config.board_highscore
+        };
+        let message = if self.score <= highscore {
+            "You Won!"
+        } else {
+            let mut config = CONFIG.get().write().unwrap();
+            config.board_highscore = self.score;
+            "You Won — New Highscore!"
+        };
+        self.updated_score(self.score);
+        self.set_status(message, Some(MESSAGE_DELAY));
     }
 
     fn set_status(&mut self, message: &str, timeout: Option<f64>) {
