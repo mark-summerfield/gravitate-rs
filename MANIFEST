@@ -1,7 +1,6 @@
 src/main.rs
 src/commandline.rs
 src/config.rs
-src/action.rs
 src/application.rs
 src/mainwindow.rs
 src/board.rs

@@ -181,7 +181,6 @@ impl Board {
         *self.score.borrow_mut() += (self.adjoining.borrow().len()
             as u16)
             .pow(*self.maxcolors.borrow() as u32 - 2);
-        self.sender.send(Action::UpdatedScore(*self.score.borrow()));
         let tiles = &mut *self.tiles.borrow_mut();
         for &adjoining_pos in self.adjoining.borrow().iter() {
             let x = adjoining_pos.x as usize;
@@ -405,6 +404,7 @@ impl Board {
             config.board_highscore
         };
         let score = *self.score.borrow();
+        self.sender.send(Action::UpdatedScore(score));
         let (user_won, can_move) = self.check_tiles();
         *self.mode.borrow_mut() = if user_won {
             let is_new_highscore = score > highscore;
