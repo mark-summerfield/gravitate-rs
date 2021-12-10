@@ -2,9 +2,8 @@
 // License: GPLv3
 
 use super::CONFIG;
-use crate::action::Action;
 use crate::board_util::{self, Mode, Pos, Size, Tiles};
-use crate::fixed::{Arrow, COLORS, TINY_DELAY};
+use crate::fixed::{Action, Arrow, COLORS, TINY_DELAY};
 use fltk::enums::Color;
 use fltk::prelude::*;
 use rand::seq::SliceRandom;

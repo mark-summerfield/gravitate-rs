@@ -27,6 +27,26 @@ pub const DELAY_MS_MAX: u16 = 1000;
 pub const MESSAGE_DELAY: f64 = 10.0; // seconds
 pub const TINY_DELAY: f64 = 0.005; // seconds
 
+#[derive(Copy, Clone, Debug)]
+pub enum Action {
+    New,
+    Options,
+    About,
+    Help,
+    Quit,
+    MoveUp,
+    MoveDown,
+    MoveLeft,
+    MoveRight,
+    ClickTile,
+    PressTile,
+    DeleteAdjoining,
+    CloseUp,
+    Redraw,
+    UpdatedScore(u16),
+    GameOver,
+}
+
 pub enum Arrow {
     Left,
     Right,
@@ -45,7 +65,7 @@ pub fn initialize_colors() {
         Color::from_hex(0xA00000),
         Color::from_hex(0xA000A0),
         Color::from_hex(0xA0A000),
-        Color::BackGround.darker()
+        Color::BackGround.darker(),
     ];
     COLORS.set(sync::RwLock::new(colors));
 }

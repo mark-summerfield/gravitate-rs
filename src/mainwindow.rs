@@ -2,11 +2,10 @@
 // License: GPLv3
 
 use super::CONFIG;
-use crate::action::Action;
 use crate::board;
 use crate::fixed::{
-    ABOUT_ICON, APPNAME, HELP_ICON, ICON, NEW_ICON, OPTIONS_ICON, PAD,
-    QUIT_ICON, TOOLBAR_HEIGHT, TOOLBUTTON_SIZE,
+    Action, ABOUT_ICON, APPNAME, HELP_ICON, ICON, NEW_ICON, OPTIONS_ICON,
+    PAD, QUIT_ICON, TOOLBAR_HEIGHT, TOOLBUTTON_SIZE,
 };
 use crate::util;
 use fltk::prelude::*;

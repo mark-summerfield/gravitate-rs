@@ -3,7 +3,6 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
 mod about_form;
-mod action;
 mod application;
 mod board;
 mod board_util;

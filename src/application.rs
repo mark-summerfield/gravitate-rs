@@ -3,9 +3,8 @@
 
 use super::CONFIG;
 use crate::about_form;
-use crate::action::Action;
 use crate::board;
-use crate::fixed::{Arrow, MESSAGE_DELAY};
+use crate::fixed::{Action, Arrow, MESSAGE_DELAY};
 use crate::mainwindow;
 use fltk::prelude::*;
 use thousands::Separable;

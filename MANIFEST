@@ -12,6 +12,8 @@ src/util.rs
 
 Cargo.toml
 
+st.sh
+
 # TODO help_form
 # TODO options_form: Columns, Rows, Max Colors, Delay (ms), Scale
 # TODO for windows will need to incorporate icon; see comparepdfcmd2

@@ -1,3 +1,3 @@
 #!/bin/bash
-tokei -f -c80 -tPython,Rust -etarget
+tokei -f -slines -c80 -tPython,Rust -etarget
 git st
