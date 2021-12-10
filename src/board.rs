@@ -321,8 +321,9 @@ impl Board {
                     tiles[x][y];
                 tiles[x][y] = None;
                 already_moved.insert(pos, new_pos);
+                let delay = *self.delay_ms.borrow() as f64 / 7000.0;
                 let sender = self.sender.clone();
-                fltk::app::add_timeout(0.05, move || {
+                fltk::app::add_timeout(delay, move || {
                     sender.send(Action::Redraw);
                 });
                 return true;
