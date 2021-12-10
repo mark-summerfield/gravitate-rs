@@ -258,14 +258,19 @@ impl Board {
 
     pub fn close_up(&mut self) {
         self.move_tiles();
-        if let Some(mut selected) = *self.selected.borrow_mut() {
+        let mut new_selected: Option<Pos> = None;
+        if let Some(selected) = *self.selected.borrow() {
             let x = selected.x as usize;
             let y = selected.y as usize;
             let tiles = &*self.tiles.borrow();
             if tiles[x][y].is_none() {
                 let size = *self.size.borrow();
-                selected = Pos::new(size.rows / 2, size.columns / 2);
+                new_selected =
+                    Some(Pos::new(size.rows / 2, size.columns / 2));
             }
+        }
+        if new_selected.is_some() {
+            *self.selected.borrow_mut() = new_selected;
         }
         self.widget.redraw();
         // TODO check game over
