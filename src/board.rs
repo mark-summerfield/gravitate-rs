@@ -309,7 +309,8 @@ impl Board {
                     tiles[x][y];
                 tiles[x][y] = None;
                 already_moved.insert(pos, new_pos);
-                let delay = *self.delay_ms.borrow() as f64 / 7000.0;
+                let delay =
+                    0.2_f64.max(*self.delay_ms.borrow() as f64 / 7000.0);
                 #[allow(clippy::clone_on_copy)] // The clone is needed
                 let sender = self.sender.clone();
                 fltk::app::add_timeout(delay, move || {
