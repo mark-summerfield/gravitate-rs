@@ -528,7 +528,7 @@ fn add_draw_handler(board: &mut Board) {
             *selected.borrow(),
         );
         if *mode.borrow() != Mode::Playing {
-            fltk::draw::set_font(fltk::enums::Font::TimesBoldItalic, 56);
+            fltk::draw::set_font(fltk::enums::Font::TimesBoldItalic, 48);
             if *mode.borrow() == Mode::GameOver {
                 fltk::draw::set_draw_color(Color::Green);
                 fltk::draw::draw_text2(
