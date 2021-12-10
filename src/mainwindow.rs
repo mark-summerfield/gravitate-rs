@@ -32,7 +32,7 @@ pub fn make(
     let mut vbox = fltk::group::Flex::default()
         .size_of_parent()
         .with_type(fltk::group::FlexType::Column);
-    vbox.set_margin(PAD * 2);
+    vbox.set_margin(PAD);
     let toolbar = add_toolbar(sender, width);
     vbox.set_size(&toolbar, TOOLBAR_HEIGHT);
     let mut board = board::Board::new(sender);
