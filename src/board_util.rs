@@ -4,7 +4,7 @@
 use fltk::enums::Color;
 use std::fmt;
 
-pub const BACKGROUND_COLOR: Color = Color::from_hex(0xFFFEE0);
+pub const BACKGROUND_COLOR: Color = Color::BackGround;
 
 pub type Tiles = Vec<Vec<Option<Color>>>;
 
@@ -106,7 +106,7 @@ fn draw_tile(x: i32, y: i32, width: i32, height: i32, color: Color) {
         height,
         color,
     );
-    fltk::draw::draw_rect(x, y, width, height);
+    fltk::draw::draw_rect_with_color(x, y, width, height, BACKGROUND_COLOR);
 }
 
 fn draw_focus(x: i32, y: i32, width: i32, height: i32) {

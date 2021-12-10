@@ -45,7 +45,7 @@ pub fn initialize_colors() {
         Color::from_hex(0xA00000),
         Color::from_hex(0xA000A0),
         Color::from_hex(0xA0A000),
-        Color::from_hex(0xA0A0A0),
+        Color::BackGround.darker()
     ];
     COLORS.set(sync::RwLock::new(colors));
 }

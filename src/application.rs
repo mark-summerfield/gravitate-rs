@@ -139,8 +139,10 @@ impl Application {
             let config = CONFIG.get().read().unwrap();
             config.board_highscore
         };
-        let message = if self.score <= highscore {
+        let message = if self.score < highscore {
             "You Won!"
+        } else if self.score == highscore {
+            "You Won Equaling Highscore!"
         } else {
             let mut config = CONFIG.get().write().unwrap();
             config.board_highscore = self.score;

@@ -5,8 +5,8 @@ use super::CONFIG;
 use crate::action::Action;
 use crate::board;
 use crate::fixed::{
-    ABOUT_ICON, APPNAME, BUTTON_HEIGHT, HELP_ICON, ICON, NEW_ICON,
-    OPTIONS_ICON, PAD, QUIT_ICON, TOOLBAR_HEIGHT, TOOLBUTTON_SIZE,
+    ABOUT_ICON, APPNAME, HELP_ICON, ICON, NEW_ICON, OPTIONS_ICON, PAD,
+    QUIT_ICON, TOOLBAR_HEIGHT, TOOLBUTTON_SIZE,
 };
 use crate::util;
 use fltk::prelude::*;
@@ -32,7 +32,7 @@ pub fn make(
     let mut vbox = fltk::group::Flex::default()
         .size_of_parent()
         .with_type(fltk::group::FlexType::Column);
-    vbox.set_margin(PAD);
+    vbox.set_margin(PAD * 2);
     let toolbar = add_toolbar(sender, width);
     vbox.set_size(&toolbar, TOOLBAR_HEIGHT);
     let mut board = board::Board::new(sender);
@@ -125,7 +125,7 @@ fn add_status_row(
     width: i32,
 ) -> (fltk::frame::Frame, fltk::frame::Frame) {
     let mut status_row = fltk::group::Flex::default()
-        .with_size(width, BUTTON_HEIGHT)
+        .with_size(width, TOOLBUTTON_SIZE)
         .with_type(fltk::group::FlexType::Row);
     let mut statusbar = fltk::frame::Frame::default();
     statusbar.set_frame(fltk::enums::FrameType::EngravedFrame);
@@ -136,7 +136,7 @@ fn add_status_row(
     scorelabel.set_frame(fltk::enums::FrameType::EngravedFrame);
     status_row.set_size(&scorelabel, 160);
     status_row.end();
-    vbox.set_size(&status_row, BUTTON_HEIGHT);
+    vbox.set_size(&status_row, TOOLBUTTON_SIZE);
     (statusbar, scorelabel)
 }
 

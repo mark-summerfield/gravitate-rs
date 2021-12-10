@@ -12,6 +12,8 @@ src/util.rs
 
 Cargo.toml
 
+# TODO help_form
+# TODO options_form
 # TODO for windows will need to incorporate icon; see comparepdfcmd2
 
 # vim: syn=yaml
