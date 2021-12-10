@@ -1,6 +1,6 @@
 # Gravitate
 
-A SameGame/TileFall-like game written in Rust/FLTK
+A SameGame/TileFall-like game written in Rust/FLTK.
 
 *WARNING* Work in Progress (so no Windows binary yet).
 
