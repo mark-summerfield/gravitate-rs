@@ -424,14 +424,37 @@ impl Board {
     }
 
     pub fn check_game_over(&mut self) {
+        let (user_won, can_move) = self.check_tiles();
+        *self.game_over.borrow_mut() = user_won || !can_move;
+        if user_won {
+            self.sender.send(Action::UserWon);
+        } else if !can_move {
+            let size = *self.size.borrow();
+            let tiles = &mut *self.tiles.borrow_mut();
+            for column in 0..size.columns {
+                for row in 0..size.rows {
+                    let x = column as usize;
+                    let y = row as usize;
+                    if let Some(color) = tiles[x][y] {
+                        tiles[x][y] = Some(color.darker());
+                    }
+                }
+            }
+            self.sender.send(Action::GameOver);
+        }
+        self.widget.redraw();
+    }
+
+    fn check_tiles(&mut self) -> (bool, bool) {
         let mut count_for_color = HashMap::<Color, u32>::new();
-        let mut user_won = false;
-        let mut can_move = true;
+        let mut user_won = true;
+        let mut can_move = false;
         let size = *self.size.borrow();
         let tiles = &*self.tiles.borrow();
         for column in 0..size.columns {
             for row in 0..size.rows {
-                if let Some(color) = tiles[column as usize][row as usize] {
+                if let Some(color) = tiles[column as usize][row as usize]
+                {
                     if let Some(count) = count_for_color.get_mut(&color) {
                         *count += 1;
                     } else {
@@ -450,13 +473,7 @@ impl Board {
                 break;
             }
         }
-        *self.game_over.borrow_mut() = user_won || !can_move;
-        if user_won {
-            self.sender.send(Action::UserWon);
-        } else if !can_move {
-            self.sender.send(Action::GameOver);
-        }
-        self.widget.redraw();
+        (user_won, can_move)
     }
 }
 
