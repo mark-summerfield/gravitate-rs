@@ -8,6 +8,7 @@ use crate::board;
 use crate::fixed::{Arrow, MESSAGE_DELAY};
 use crate::mainwindow;
 use fltk::prelude::*;
+use thousands::Separable;
 
 pub struct Application {
     app: fltk::app::App,
@@ -90,6 +91,7 @@ impl Application {
     }
 
     pub fn on_new_game(&mut self) {
+        self.score = 0;
         self.board.new_game();
         self.set_status("New game! Click a tile…", Some(MESSAGE_DELAY));
     }
@@ -118,15 +120,25 @@ impl Application {
     }
 
     fn updated_score(&mut self, score: u16) {
-        println!("Application.updated_score {}", score); // TODO update score
+        self.score = score;
+        let config = CONFIG.get().read().unwrap();
+        self.scorelabel.set_label(&format!(
+            "{} • {}",
+            score,
+            config.board_highscore.separate_with_commas()
+        ));
+        fltk::app::redraw(); // redraws the world
     }
 
     fn game_over(&mut self) {
-        println!("Application.game_over"); // TODO update score
+        self.set_status("Game Over", Some(MESSAGE_DELAY));
     }
 
     fn user_won(&mut self) {
-        println!("Application.user_won"); // TODO update score & maybe highscore
+        // TODO
+        // if new high score, save & change message to
+        //  "You Won with a New Highscore!"
+        self.set_status("You Won!", Some(MESSAGE_DELAY));
     }
 
     fn set_status(&mut self, message: &str, timeout: Option<f64>) {
@@ -144,7 +156,6 @@ impl Application {
     }
 
     fn clear_status(&mut self) {
-        println!("clear_status");
         self.statusbar.set_label("");
         fltk::app::redraw(); // redraws the world
     }
