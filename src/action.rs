@@ -17,7 +17,7 @@ pub enum Action {
     DeleteAdjoining,
     CloseUp,
     Redraw,
-    UpdatedScore(u16), // score
-    GameOver(u16),     // score
-    UserWon(u16),      // score
+    UpdatedScore(u16),
+    GameOver,
+    UserWon,
 }

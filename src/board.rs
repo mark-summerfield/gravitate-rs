@@ -272,8 +272,7 @@ impl Board {
         if new_selected.is_some() {
             *self.selected.borrow_mut() = new_selected;
         }
-        self.widget.redraw();
-        // TODO check game over
+        self.check_game_over();
     }
 
     fn move_tiles(&mut self) {
@@ -423,6 +422,42 @@ impl Board {
             false
         }
     }
+
+    pub fn check_game_over(&mut self) {
+        let mut count_for_color = HashMap::<Color, u32>::new();
+        let mut user_won = false;
+        let mut can_move = true;
+        let size = *self.size.borrow();
+        let tiles = &*self.tiles.borrow();
+        for column in 0..size.columns {
+            for row in 0..size.rows {
+                if let Some(color) = tiles[column as usize][row as usize] {
+                    if let Some(count) = count_for_color.get_mut(&color) {
+                        *count += 1;
+                    } else {
+                        count_for_color.insert(color.clone(), 1);
+                    }
+                    user_won = false;
+                    if self.is_legal(&Pos::new(column, row), color) {
+                        can_move = true;
+                    }
+                }
+            }
+        }
+        for (_, count) in count_for_color.iter() {
+            if *count == 1 {
+                can_move = false;
+                break;
+            }
+        }
+        *self.game_over.borrow_mut() = user_won || !can_move;
+        if user_won {
+            self.sender.send(Action::UserWon);
+        } else if !can_move {
+            self.sender.send(Action::GameOver);
+        }
+        self.widget.redraw();
+    }
 }
 
 impl Deref for Board {
@@ -461,12 +496,11 @@ fn add_event_handler(
 
 fn add_draw_handler(board: &mut Board) {
     let drawing = board.drawing.clone();
-    let game_over = board.game_over.clone();
     let selected = board.selected.clone();
     let tiles = board.tiles.clone();
     let size = board.size.clone();
     board.widget.draw(move |widget| {
-        if *drawing.borrow() || *game_over.borrow() {
+        if *drawing.borrow() {
             return;
         }
         *drawing.borrow_mut() = true;

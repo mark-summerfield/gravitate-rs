@@ -16,6 +16,7 @@ pub struct Application {
     statusbar: fltk::frame::Frame,
     scorelabel: fltk::frame::Frame,
     receiver: fltk::app::Receiver<Action>,
+    score: u16,
 }
 
 impl Application {
@@ -34,6 +35,7 @@ impl Application {
             statusbar,
             scorelabel,
             receiver,
+            score: 0,
         };
         app.on_new_game();
         app
@@ -80,8 +82,8 @@ impl Application {
                         self.updated_score(score)
                     }
                     Action::Redraw => self.board.redraw(),
-                    Action::GameOver(score) => self.game_over(score),
-                    Action::UserWon(score) => self.user_won(score),
+                    Action::GameOver => self.game_over(),
+                    Action::UserWon => self.user_won(),
                 }
             }
         }
@@ -119,11 +121,11 @@ impl Application {
         println!("Application.updated_score {}", score); // TODO update score
     }
 
-    fn game_over(&mut self, score: u16) {
+    fn game_over(&mut self) {
         println!("Application.game_over"); // TODO update score
     }
 
-    fn user_won(&mut self, score: u16) {
+    fn user_won(&mut self) {
         println!("Application.user_won"); // TODO update score & maybe highscore
     }
 
