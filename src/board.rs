@@ -303,12 +303,18 @@ impl Board {
                 tiles[new_pos.x as usize][new_pos.y as usize] =
                     tiles[x][y];
                 tiles[x][y] = None;
-                fltk::app::sleep(TINY_DELAY);
-                self.widget.redraw();
+                let sender = self.sender.clone();
+                fltk::app::add_timeout(0.05, move || {
+                    sender.send(Action::Redraw);
+                });
                 return true;
             }
         }
         false
+    }
+
+    pub fn redraw(&mut self) {
+        self.widget.redraw();
     }
 
     fn get_empty_neighbours(&mut self, pos: Pos) -> PosSet {

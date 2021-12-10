@@ -79,6 +79,7 @@ impl Application {
                     Action::UpdatedScore(score) => {
                         self.updated_score(score)
                     }
+                    Action::Redraw => self.board.redraw(),
                     Action::GameOver(score) => self.game_over(score),
                     Action::UserWon(score) => self.user_won(score),
                 }

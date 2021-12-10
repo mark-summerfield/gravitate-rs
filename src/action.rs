@@ -16,6 +16,7 @@ pub enum Action {
     PressTile,
     DeleteAdjoining,
     CloseUp,
+    Redraw,
     UpdatedScore(u16), // score
     GameOver(u16),     // score
     UserWon(u16),      // score
