@@ -133,7 +133,7 @@ fn add_status_row(
         &format!("0 • {}", config.board_highscore.separate_with_commas()),
     );
     scorelabel.set_frame(fltk::enums::FrameType::EngravedFrame);
-    status_row.set_size(&scorelabel, 160);
+    status_row.set_size(&scorelabel, 120);
     status_row.end();
     vbox.set_size(&status_row, TOOLBUTTON_SIZE);
     (statusbar, scorelabel)

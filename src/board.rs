@@ -407,9 +407,12 @@ impl Board {
         let score = *self.score.borrow();
         let (user_won, can_move) = self.check_tiles();
         *self.mode.borrow_mut() = if user_won {
-            let mut config = CONFIG.get().write().unwrap();
-            config.board_highscore = score;
-            Mode::UserWon(score > highscore)
+            let is_new_highscore = score > highscore;
+            if is_new_highscore {
+                let mut config = CONFIG.get().write().unwrap();
+                config.board_highscore = score;
+            }
+            Mode::UserWon(is_new_highscore)
         } else if can_move {
             Mode::Playing
         } else {
