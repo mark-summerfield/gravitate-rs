@@ -122,7 +122,7 @@ impl Application {
         let config = CONFIG.get().read().unwrap();
         self.scorelabel.set_label(&format!(
             "{} • {}",
-            score,
+            score.separate_with_commas(),
             config.board_highscore.separate_with_commas()
         ));
         fltk::app::redraw(); // redraws the world
