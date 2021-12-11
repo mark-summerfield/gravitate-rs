@@ -293,8 +293,7 @@ impl Board {
     ) -> bool {
         let empties = self.get_empty_neighbours(pos);
         if !empties.is_empty() {
-            let (do_move, new_pos) =
-                self.nearest_to_middle(pos, &empties);
+            let (do_move, new_pos) = self.nearest_to_middle(pos, &empties);
             if let Some(value) = already_moved.get(&new_pos) {
                 if value == &pos {
                     return false; // avoid endless loop back and forth
@@ -304,8 +303,7 @@ impl Board {
                 let tiles = &mut *self.tiles.borrow_mut();
                 let x = pos.x as usize;
                 let y = pos.y as usize;
-                tiles[new_pos.x as usize][new_pos.y as usize] =
-                    tiles[x][y];
+                tiles[new_pos.x as usize][new_pos.y as usize] = tiles[x][y];
                 tiles[x][y] = None;
                 already_moved.insert(pos, new_pos);
                 let delay =
@@ -352,11 +350,7 @@ impl Board {
         neighbours
     }
 
-    fn nearest_to_middle(
-        &self,
-        pos: Pos,
-        empties: &PosSet,
-    ) -> (bool, Pos) {
+    fn nearest_to_middle(&self, pos: Pos, empties: &PosSet) -> (bool, Pos) {
         let x = pos.x;
         let y = pos.y;
         let tiles = self.tiles.clone();
@@ -377,8 +371,7 @@ impl Board {
                     // Make same colors slightly attractive
                     new_radius -= 0.1;
                 }
-                if !radius_pos.is_valid() || shortest_radius > new_radius
-                {
+                if !radius_pos.is_valid() || shortest_radius > new_radius {
                     shortest_radius = new_radius;
                     radius_pos = *new_pos;
                 }
@@ -451,8 +444,7 @@ impl Board {
         let tiles = &*self.tiles.borrow();
         for column in 0..size.columns {
             for row in 0..size.rows {
-                if let Some(color) = tiles[column as usize][row as usize]
-                {
+                if let Some(color) = tiles[column as usize][row as usize] {
                     if let Some(count) = count_for_color.get_mut(&color) {
                         *count += 1;
                     } else {
@@ -489,10 +481,7 @@ impl DerefMut for Board {
     }
 }
 
-fn add_event_handler(
-    board: &mut Board,
-    sender: fltk::app::Sender<Action>,
-) {
+fn add_event_handler(board: &mut Board, sender: fltk::app::Sender<Action>) {
     let mode = board.mode.clone();
     board.widget.handle(move |_, event| {
         if *mode.borrow() != Mode::Playing {

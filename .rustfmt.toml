@@ -1,6 +1,6 @@
 edition = "2021"
-max_width = 74
-# comment_width = 74
+max_width = 76
+# comment_width = 76
 use_small_heuristics = "Max"
 use_field_init_shorthand = true
 # wrap_comments = true

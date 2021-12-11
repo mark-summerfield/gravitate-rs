@@ -128,12 +128,8 @@ fn read_window_properties(
             util::get_num(value, 240, max_y, config.window_height)
     }
     if let Some(value) = properties.get(SCALE_KEY) {
-        config.window_scale = util::get_num(
-            value,
-            SCALE_MIN,
-            SCALE_MAX,
-            config.window_scale,
-        )
+        config.window_scale =
+            util::get_num(value, SCALE_MIN, SCALE_MAX, config.window_scale)
     }
 }
 

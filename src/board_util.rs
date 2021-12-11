@@ -82,12 +82,8 @@ pub fn draw_tiles(
     tiles: &[Vec<Option<Color>>],
     selected: Option<Pos>,
 ) {
-    let (tile_width, tile_height) = get_tile_size(
-        size.columns as i32,
-        size.rows as i32,
-        width,
-        height,
-    );
+    let (tile_width, tile_height) =
+        get_tile_size(size.columns as i32, size.rows as i32, width, height);
     for column in 0..size.columns {
         let x = x1 + (tile_width * column as i32);
         for row in 0..size.rows {
@@ -113,13 +109,7 @@ fn draw_tile(x: i32, y: i32, width: i32, height: i32, color: Color) {
         height,
         color,
     );
-    fltk::draw::draw_rect_with_color(
-        x,
-        y,
-        width,
-        height,
-        BACKGROUND_COLOR,
-    );
+    fltk::draw::draw_rect_with_color(x, y, width, height, BACKGROUND_COLOR);
 }
 
 fn draw_focus(x: i32, y: i32, width: i32, height: i32) {
