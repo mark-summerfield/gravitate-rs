@@ -21,7 +21,7 @@ pub fn make(
 ) {
     fltk::window::Window::set_default_xclass(APPNAME);
     let icon = fltk::image::SvgImage::from_data(ICON).unwrap();
-    let (x, y, width, height) = get_xywh();
+    let (x, y, width, height) = get_config_window_rect();
     let mut mainwindow =
         fltk::window::Window::new(x, y, width, height, APPNAME);
     mainwindow.set_icon(Some(icon));
@@ -139,7 +139,7 @@ fn add_status_row(
     (statusbar, scorelabel)
 }
 
-fn get_xywh() -> (i32, i32, i32, i32) {
+fn get_config_window_rect() -> (i32, i32, i32, i32) {
     let mut config = CONFIG.get().write().unwrap();
     let x = if config.window_x >= 0 {
         config.window_x
@@ -174,7 +174,7 @@ pub fn add_event_handler(
     });
     mainwindow.handle(move |_, event| {
         if event == fltk::enums::Event::KeyUp
-            && fltk::app::event_key().bits() == 0x20
+            && fltk::app::event_key().bits() == 32
         {
             sender.send(Action::PressTile); // Space
             return true;

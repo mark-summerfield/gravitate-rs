@@ -415,21 +415,9 @@ impl Board {
         } else if can_move {
             Mode::Playing
         } else {
+            self.dim_remaining_tiles();
             Mode::GameOver
         };
-        if !can_move {
-            let size = *self.size.borrow();
-            let tiles = &mut *self.tiles.borrow_mut();
-            for column in 0..size.columns {
-                for row in 0..size.rows {
-                    let x = column as usize;
-                    let y = row as usize;
-                    if let Some(color) = tiles[x][y] {
-                        tiles[x][y] = Some(color.darker());
-                    }
-                }
-            }
-        }
         if *self.mode.borrow() != Mode::Playing {
             self.sender.send(Action::GameOver);
         }
@@ -464,6 +452,20 @@ impl Board {
             }
         }
         (user_won, can_move)
+    }
+
+    fn dim_remaining_tiles(&mut self) {
+        let size = *self.size.borrow();
+        let tiles = &mut *self.tiles.borrow_mut();
+        for column in 0..size.columns {
+            for row in 0..size.rows {
+                let x = column as usize;
+                let y = row as usize;
+                if let Some(color) = tiles[x][y] {
+                    tiles[x][y] = Some(color.darker());
+                }
+            }
+        }
     }
 }
 
