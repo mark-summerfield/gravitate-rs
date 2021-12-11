@@ -6,7 +6,6 @@ mod about_form;
 mod application;
 mod board;
 mod board_util;
-mod commandline;
 mod config;
 mod fixed;
 mod mainwindow;
@@ -29,7 +28,6 @@ fn main() {
     }));
     initialize_colors(); // *MUST* be done before CONFIG is created
     CONFIG.set(sync::RwLock::new(config::Config::new()));
-    commandline::read(); // *MUST* be done after CONFIG is created
     let mut app = Application::new();
     app.run();
 }

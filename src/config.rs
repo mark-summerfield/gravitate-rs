@@ -129,7 +129,10 @@ fn read_window_properties(
     }
     if let Some(value) = properties.get(SCALE_KEY) {
         config.window_scale =
-            util::get_num(value, SCALE_MIN, SCALE_MAX, config.window_scale)
+            util::get_num(value, SCALE_MIN, SCALE_MAX, config.window_scale);
+        if !util::isone32(config.window_scale) {
+            fltk::app::set_screen_scale(0, config.window_scale);
+        }
     }
 }
 
