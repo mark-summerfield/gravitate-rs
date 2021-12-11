@@ -178,9 +178,8 @@ impl Board {
     fn dim_adjoining(&mut self, pos: &Pos, color: &Color) {
         self.adjoining.borrow_mut().clear();
         self.populate_adjoining(*pos, *color);
-        *self.score.borrow_mut() += (self.adjoining.borrow().len()
-            as u16)
-            .pow(*self.maxcolors.borrow() as u32 - 2);
+        let count = self.adjoining.borrow().len() as u16;
+        self.update_score(count);
         let tiles = &mut *self.tiles.borrow_mut();
         for &adjoining_pos in self.adjoining.borrow().iter() {
             let x = adjoining_pos.x as usize;
@@ -197,6 +196,13 @@ impl Board {
                 sender.send(Action::DeleteAdjoining);
             },
         );
+    }
+
+    fn update_score(&mut self, count: u16) {
+        let size = *self.size.borrow();
+        *self.score.borrow_mut() += (((size.columns * size.rows) as f64)
+            .sqrt() as u16)
+            + count.pow(*self.maxcolors.borrow() as u32 - 2);
     }
 
     fn populate_adjoining(&self, pos: Pos, color: Color) {
@@ -538,6 +544,7 @@ fn add_draw_handler(board: &mut Board) {
 fn draw_game_over(x1: i32, y1: i32, width: i32, height: i32) {
     fltk::draw::set_font(fltk::enums::Font::TimesBoldItalic, 48);
     fltk::draw::set_draw_color(Color::White);
+    let height = (height * 3) / 2;
     fltk::draw::draw_text2(
         "Game Over!",
         x1,
