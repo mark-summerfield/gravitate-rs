@@ -403,7 +403,6 @@ impl Board {
             config.board_highscore
         };
         let score = *self.score.borrow();
-        self.sender.send(Action::UpdatedScore(score));
         let (user_won, can_move) = self.check_tiles();
         *self.mode.borrow_mut() = if user_won {
             let is_new_highscore = score > highscore;
@@ -421,6 +420,7 @@ impl Board {
         if *self.mode.borrow() != Mode::Playing {
             self.sender.send(Action::GameOver);
         }
+        self.sender.send(Action::UpdatedScore(score));
         self.widget.redraw();
     }
 
