@@ -75,7 +75,10 @@ fn make_widgets(
     (form, ok_button)
 }
 
-fn add_event_handlers(form: &mut fltk::window::Window, ok_button: &mut fltk::button::Button) -> Rc<RefCell<Pos>>{
+fn add_event_handlers(
+    form: &mut fltk::window::Window,
+    ok_button: &mut fltk::button::Button)
+-> Rc<RefCell<Pos>> {
     let pos = Rc::new(RefCell::new(Pos::default()));
     form.handle({
         let pos = pos.clone();
