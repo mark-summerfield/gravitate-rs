@@ -27,7 +27,7 @@ impl Application {
         let (sender, receiver) = fltk::app::channel::<Action>();
         let (mut mainwindow, board, statusbar, scorelabel) =
             mainwindow::make(sender);
-        mainwindow::add_event_handler(&mut mainwindow, sender);
+        mainwindow::add_event_handlers(&mut mainwindow, sender);
         mainwindow.show();
         let mut app = Self {
             app,

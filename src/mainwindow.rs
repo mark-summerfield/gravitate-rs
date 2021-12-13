@@ -160,7 +160,7 @@ fn get_config_window_rect() -> (i32, i32, i32, i32) {
     (x, y, config.window_width, config.window_height)
 }
 
-pub fn add_event_handler(
+pub fn add_event_handlers(
     mainwindow: &mut fltk::window::Window,
     sender: fltk::app::Sender<Action>,
 ) {

@@ -537,8 +537,9 @@ fn draw_game_over(x1: i32, y1: i32, width: i32, height: i32) {
     fltk::draw::set_font(fltk::enums::Font::TimesBoldItalic, 48);
     fltk::draw::set_draw_color(Color::White);
     let height = (height * 3) / 2;
+    let message = "Game Over!";
     fltk::draw::draw_text2(
-        "Game Over!",
+        message,
         x1,
         y1,
         width,
@@ -547,7 +548,7 @@ fn draw_game_over(x1: i32, y1: i32, width: i32, height: i32) {
     );
     fltk::draw::set_draw_color(Color::Green);
     fltk::draw::draw_text2(
-        "Game Over!",
+        message,
         x1 - 2,
         y1 - 2,
         width,
