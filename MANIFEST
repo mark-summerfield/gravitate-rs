@@ -4,8 +4,7 @@ src/application.rs
 src/mainwindow.rs
 src/board.rs
 src/board_util.rs
-src/about_form.rs
-src/help_form.rs
+src/html_form.rs
 src/fixed.rs # VERSION
 src/util.rs
 
@@ -14,7 +13,6 @@ Cargo.toml
 README.md
 st.sh
 
-# TODO help_form
 # TODO options_form: Columns, Rows, Max Colors, Delay (ms), Scale
 # TODO for windows will need to incorporate icon; see comparepdfcmd2
 

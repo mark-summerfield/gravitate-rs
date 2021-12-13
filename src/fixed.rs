@@ -1,7 +1,10 @@
 // Copyright © 2021 Mark Summerfield. All rights reserved.
 // License: GPLv3
 
+use crate::util::capitalize_first;
+use chrono::prelude::*;
 use fltk::enums::Color;
+use std::env;
 use std::sync;
 
 pub static APPNAME: &str = "Gravitate";
@@ -83,3 +86,70 @@ pub fn initialize_colors() {
     ];
     COLORS.set(sync::RwLock::new(colors));
 }
+
+pub fn about_html() -> String {
+    let year = Local::today().year();
+    let year = if year == 2021 {
+        format!("{}", year)
+    } else {
+        format!("2021-{}", year - 2000)
+    };
+    format!(
+        "<font face=\"Helvetica\"><center>
+<h1><font color=\"navy\">{} v{}</font></h1>
+<h3><font face=\"Helvetica\"
+color=\"navy\">A TileFall/SameGame-like game.</font></h2>
+</h3>
+<h4>
+<a href=\"http://www.qtrac.eu/gravitate.html\">www.qtrac.eu/gravitate.html</a>
+</h4>
+<h5><font face=\"Helvetica\"
+color=\"green\">Copyright © {} Mark Summerfield.<br>
+All rights reserved.</font></h5>
+<h5><font face=\"Helvetica\" color=\"green\">License: GPLv3.</font></h5>
+<p>fltk-rs {} • FLTK {} • {}/{}</p>
+</center></font>",
+        APPNAME,
+        VERSION,
+        year,
+        fltk::app::crate_version(),
+        fltk::app::version_str(),
+        capitalize_first(env::consts::OS),
+        env::consts::ARCH
+    )
+}
+
+pub static HELP_HTML: &str = "<body>
+<p><center><font color=navy size=7em><b>Gravitate</b></font></center></p>
+<font color=blue size=5em>The purpose of the game is to remove all the
+tiles.</font>
+<p>
+<font color=#008000 size=4em>
+Click a tile that has at least one vertically or horizontally adjoining tile
+of the same color to remove it and any vertically or horizontally adjoining
+tiles of the same color, and <i>their</i> vertically or horizontally
+adjoining tiles, and so on. <i>(So clicking a tile with no adjoining tiles
+of the same color does nothing.)</i> The more tiles that are removed in one
+go, the higher the score.
+</font>
+</p>
+<table border=1 align=center>
+<font color=blue>
+<tr><th>Key</th><th>Action</th></tr>
+<tr><td><b>a</b></td><td>Show About box</td></tr>
+<tr><td><b>h</b> or <b>F1</b></td><td>Show this Help window</td></tr>
+<tr><td><b>n</b></td><td>New Game</td></tr>
+<tr><td><b>o</b></td><td>View or Edit Options</td></tr>
+<tr><td><b>q</b> or <b>Esc</b></td><td>Quit</td></tr>
+<tr><td><b>←</b></td><td>Move the focus left</td></tr>
+<tr><td><b>→</b></td><td>Move the focus right</td></tr>
+<tr><td><b>↑</b></td><td>Move the focus up</td></tr>
+<tr><td><b>↓</b></td><td>Move the focus down</td></tr>
+<tr><td><b>Space</b></td><td>Click the focused tile</td></tr>
+</font>
+</table>
+<font color=#008000>
+Gravitate works like TileFall and the SameGame except that instead of tiles
+falling to the bottom and moving off to the left, they “gravitate” to the
+middle.</font>
+</body>";

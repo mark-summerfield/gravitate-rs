@@ -2,13 +2,12 @@
 // License: GPLv3
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
-mod about_form;
 mod application;
 mod board;
 mod board_util;
 mod config;
 mod fixed;
-mod help_form;
+mod html_form;
 mod mainwindow;
 mod util;
 

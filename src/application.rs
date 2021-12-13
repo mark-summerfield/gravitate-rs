@@ -2,10 +2,9 @@
 // License: GPLv3
 
 use super::CONFIG;
-use crate::about_form;
 use crate::board;
-use crate::fixed::{Action, Arrow, MESSAGE_DELAY};
-use crate::help_form;
+use crate::fixed::{about_html, Action, Arrow, HELP_HTML, MESSAGE_DELAY};
+use crate::html_form;
 use crate::mainwindow;
 use fltk::prelude::*;
 use thousands::Separable;
@@ -16,7 +15,7 @@ pub struct Application {
     board: board::Board,
     statusbar: fltk::frame::Frame,
     scorelabel: fltk::frame::Frame,
-    helpform: Option<help_form::Form>,
+    helpform: Option<html_form::Form>,
     receiver: fltk::app::Receiver<Action>,
     score: u16,
 }
@@ -102,14 +101,16 @@ impl Application {
     }
 
     fn on_about(&mut self) {
-        about_form::Form::default();
+        html_form::Form::new("About", &about_html(), true, 400, 300);
     }
 
     fn on_help(&mut self) {
         if let Some(helpform) = &mut self.helpform {
             helpform.show();
         } else {
-            self.helpform = Some(help_form::Form::default());
+            self.helpform = Some(html_form::Form::new(
+                "Help", HELP_HTML, false, 460, 480,
+            ));
         }
     }
 
