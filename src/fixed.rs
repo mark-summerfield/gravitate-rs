@@ -62,21 +62,26 @@ pub static COLORS: state::Storage<sync::RwLock<Vec<Color>>> =
 
 pub fn initialize_colors() {
     let colors = vec![
-        Color::from_hex(0x800000),
-        Color::from_hex(0x9A6324),
-        Color::from_hex(0x808000),
-        Color::from_hex(0x469990),
         Color::from_hex(0x000075),
-        Color::from_hex(0xE6194B),
-        Color::from_hex(0xF58231),
-        Color::from_hex(0xFFE119),
-        Color::from_hex(0xBFEF45),
         Color::from_hex(0x3CB44B),
         Color::from_hex(0x42D4F4),
         Color::from_hex(0x4363D8),
+        Color::from_hex(0x469990),
+        Color::from_hex(0x800000),
+        Color::from_hex(0x808000),
         Color::from_hex(0x911EB4),
-        Color::from_hex(0xF032E6),
+        Color::from_hex(0x9A6324),
         Color::from_hex(0xA9A9A9),
+        Color::from_hex(0xAAFFC3),
+        Color::from_hex(0xBFEF45),
+        Color::from_hex(0xDCBEFF),
+        Color::from_hex(0xE6194B),
+        Color::from_hex(0xF032E6),
+        Color::from_hex(0xF58231),
+        Color::from_hex(0xFABED4),
+        Color::from_hex(0xFFD8B1),
+        Color::from_hex(0xFFE119),
+        Color::from_hex(0xFFFAC8),
     ];
     COLORS.set(sync::RwLock::new(colors));
 }
