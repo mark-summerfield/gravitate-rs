@@ -1,8 +1,8 @@
 // Copyright © 2021 Mark Summerfield. All rights reserved.
 // License: GPLv3
 
+use crate::util::Pos;
 use fltk::enums::Color;
-use std::fmt;
 
 pub const BACKGROUND_COLOR: Color = Color::BackGround;
 
@@ -24,36 +24,6 @@ pub struct Size {
 impl Size {
     pub fn new(columns: i32, rows: i32) -> Self {
         Self { columns, rows }
-    }
-}
-
-#[derive(Copy, Clone, Debug, PartialEq, Eq, Hash, PartialOrd, Ord)]
-pub struct Pos {
-    pub x: i32,
-    pub y: i32,
-}
-
-impl Pos {
-    pub const INVALID: i32 = -1;
-
-    pub fn new(x: i32, y: i32) -> Self {
-        Self { x, y }
-    }
-
-    pub fn is_valid(&self) -> bool {
-        self.x != Pos::INVALID && self.y != Pos::INVALID
-    }
-}
-
-impl Default for Pos {
-    fn default() -> Self {
-        Self { x: Pos::INVALID, y: Pos::INVALID }
-    }
-}
-
-impl std::fmt::Display for Pos {
-    fn fmt(&self, out: &mut std::fmt::Formatter) -> fmt::Result {
-        write!(out, "({},{})", self.x, self.y)
     }
 }
 

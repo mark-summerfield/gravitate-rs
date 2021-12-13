@@ -2,10 +2,14 @@
 // License: GPLv3
 
 use crate::fixed::{APPNAME, BUTTON_HEIGHT, BUTTON_WIDTH, ICON};
+use crate::util::Pos;
 use fltk::prelude::*;
+use std::cell::RefCell;
+use std::rc::Rc;
 
 pub struct Form {
     form: fltk::window::Window,
+    pos: Rc<RefCell<Pos>>,
 }
 
 impl Form {
@@ -36,6 +40,16 @@ impl Form {
         vbox.end();
         form.end();
         form.make_modal(modal);
+        let pos = Rc::new(RefCell::new(Pos::default()));
+        form.handle({
+            let pos = pos.clone();
+            move |form, event| {
+                if event == fltk::enums::Event::Resize {
+                    *pos.borrow_mut() = Pos::new(*&form.x(), *&form.y());
+                }
+                false
+            }
+        });
         form.show();
         ok_button.set_callback({
             let mut form = form.clone();
@@ -48,11 +62,16 @@ impl Form {
                 fltk::app::wait();
             }
         }
-        Self { form }
+        Self { form, pos }
     }
 
     pub fn show(&mut self) {
         self.form.show();
+        let pos = *self.pos.borrow();
+        if pos.is_valid() {
+            self.form.set_pos(pos.x, pos.y);
+            self.form.redraw();
+        }
     }
 }
 
