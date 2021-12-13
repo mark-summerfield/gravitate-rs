@@ -79,7 +79,7 @@ fn add_toolbar(
     add_toolbutton(
         sender,
         'h',
-        "New game • F1 or h",
+        "Help • F1 or h",
         Action::Help,
         HELP_ICON,
         &mut button_box,
@@ -88,7 +88,7 @@ fn add_toolbar(
     add_toolbutton(
         sender,
         'q',
-        "New game • Esc or q",
+        "Quit • Esc or q",
         Action::Quit,
         QUIT_ICON,
         &mut button_box,

@@ -5,6 +5,7 @@ use super::CONFIG;
 use crate::about_form;
 use crate::board;
 use crate::fixed::{Action, Arrow, MESSAGE_DELAY};
+use crate::help_form;
 use crate::mainwindow;
 use fltk::prelude::*;
 use thousands::Separable;
@@ -15,6 +16,7 @@ pub struct Application {
     board: board::Board,
     statusbar: fltk::frame::Frame,
     scorelabel: fltk::frame::Frame,
+    helpform: Option<help_form::Form>,
     receiver: fltk::app::Receiver<Action>,
     score: u16,
 }
@@ -34,6 +36,7 @@ impl Application {
             board,
             statusbar,
             scorelabel,
+            helpform: None,
             receiver,
             score: 0,
         };
@@ -103,7 +106,11 @@ impl Application {
     }
 
     fn on_help(&mut self) {
-        println!("Application.on_help"); // TODO
+        if let Some(helpform) = &mut self.helpform {
+            helpform.show();
+        } else {
+            self.helpform = Some(help_form::Form::default());
+        }
     }
 
     fn on_quit(&mut self) {

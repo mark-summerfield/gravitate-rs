@@ -8,6 +8,7 @@ mod board;
 mod board_util;
 mod config;
 mod fixed;
+mod help_form;
 mod mainwindow;
 mod util;
 
