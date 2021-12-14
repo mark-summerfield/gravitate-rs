@@ -84,8 +84,7 @@ impl Board {
         let mut rng = rand::thread_rng();
         let all_colors = COLORS.get().read().unwrap();
         let mut colors: Vec<Color>;
-        loop {
-            let mut ok = true;
+        'color: loop {
             colors = all_colors
                 .choose_multiple(&mut rng,
                                  (*self.maxcolors.borrow()).into())
@@ -98,13 +97,10 @@ impl Board {
                            (LAVENDER, PINK),
                            (BEIGE, WHITE)].iter() {
                 if colors.contains(&a) && colors.contains(&b) {
-                    ok = false; // disallow hard to see color combinations
-                    break;
+                    continue 'color; // disallow hard to see color pairs
                 }
             }
-            if ok {
-                break;
-            }
+            break;
         }
         colors
     }

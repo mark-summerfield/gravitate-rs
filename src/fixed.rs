@@ -53,6 +53,16 @@ pub const MINT: Color = Color::from_hex(0xAAFFC3);
 pub const LAVENDER: Color = Color::from_hex(0xDCBEFF);
 pub const WHITE: Color = Color::from_hex(0xFFFFFF);
 
+pub static COLORS: state::Storage<sync::RwLock<Vec<Color>>> =
+    state::Storage::new();
+
+pub fn initialize_colors() {
+    let colors = vec![MAROON, BROWN, OLIVE, TEAL, NAVY, BLACK, RED, ORANGE,
+        YELLOW, LIME, GREEN, CYAN, BLUE, PURPLE, MAGENTA, GREY, PINK,
+        APRICOT, BEIGE, MINT, LAVENDER, WHITE];
+    COLORS.set(sync::RwLock::new(colors));
+}
+
 #[derive(Copy, Clone, Debug)]
 pub enum Action {
     New,
@@ -78,16 +88,6 @@ pub enum Arrow {
     Right,
     Up,
     Down,
-}
-
-pub static COLORS: state::Storage<sync::RwLock<Vec<Color>>> =
-    state::Storage::new();
-
-pub fn initialize_colors() {
-    let colors = vec![MAROON, BROWN, OLIVE, TEAL, NAVY, BLACK, RED, ORANGE,
-        YELLOW, LIME, GREEN, CYAN, BLUE, PURPLE, MAGENTA, GREY, PINK,
-        APRICOT, BEIGE, MINT, LAVENDER, WHITE];
-    COLORS.set(sync::RwLock::new(colors));
 }
 
 pub fn about_html() -> String {
