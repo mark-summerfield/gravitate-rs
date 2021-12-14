@@ -9,6 +9,7 @@ mod config;
 mod fixed;
 mod html_form;
 mod mainwindow;
+mod options_form;
 mod util;
 
 use crate::application::Application;

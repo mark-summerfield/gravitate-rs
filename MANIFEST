@@ -5,6 +5,7 @@ src/mainwindow.rs
 src/board.rs
 src/board_util.rs
 src/html_form.rs
+src/options_form.rs
 src/fixed.rs # VERSION
 src/util.rs
 
@@ -13,7 +14,7 @@ Cargo.toml
 README.md
 st.sh
 
-# TODO options_form: Columns, Rows, Max Colors, Delay (ms), Scale
+# TODO add icons for OK and Cancel buttons?
 # TODO for windows will need to incorporate icon; see comparepdfcmd2
 
 # vim: syn=yaml

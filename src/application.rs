@@ -6,6 +6,7 @@ use crate::board;
 use crate::fixed::{about_html, Action, Arrow, HELP_HTML, MESSAGE_DELAY};
 use crate::html_form;
 use crate::mainwindow;
+use crate::options_form;
 use fltk::prelude::*;
 use thousands::Separable;
 
@@ -97,7 +98,15 @@ impl Application {
     }
 
     fn on_options(&mut self) {
-        println!("Application.on_options"); // TODO
+        let form = options_form::Form::default();
+        if *form.ok.borrow() {
+            self.set_status(
+                "Start New Game for New Options",
+                Some(MESSAGE_DELAY),
+            );
+        } else {
+            self.clear_status();
+        }
     }
 
     fn on_about(&mut self) {

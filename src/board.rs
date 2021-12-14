@@ -96,7 +96,7 @@ impl Board {
                            (APRICOT, PINK),
                            (LAVENDER, PINK),
                            (BEIGE, WHITE)].iter() {
-                if colors.contains(&a) && colors.contains(&b) {
+                if colors.contains(a) && colors.contains(b) {
                     continue 'color; // disallow hard to see color pairs
                 }
             }
