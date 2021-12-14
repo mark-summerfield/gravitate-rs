@@ -2,7 +2,6 @@
 // License: GPLv3
 
 use crate::fixed::{APPNAME, BUTTON_HEIGHT, BUTTON_WIDTH, ICON};
-use crate::util;
 use fltk::prelude::*;
 
 pub struct Form {
@@ -50,9 +49,10 @@ fn make_widgets(
     resizable: bool,
 ) -> (fltk::window::Window, fltk::button::Button) {
     let image = fltk::image::SvgImage::from_data(ICON).unwrap();
-    let x = util::x() - 200;
-    let y = util::y() - 100;
-    let mut form = fltk::window::Window::new(x, y, width, height, "");
+    let mut form = fltk::window::Window::new(0, 0, width, height, "");
+    if let Some(window) = fltk::app::first_window() {
+        form.set_pos(window.x() + 50, window.y() + 100);
+    }
     form.set_label(&format!("{} — {}", title, APPNAME));
     form.make_resizable(resizable);
     form.set_icon(Some(image));

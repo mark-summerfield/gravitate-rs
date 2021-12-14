@@ -14,7 +14,6 @@ Cargo.toml
 README.md
 st.sh
 
-# TODO add icons for OK and Cancel buttons?
 # TODO for windows will need to incorporate icon; see comparepdfcmd2
 
 # vim: syn=yaml
