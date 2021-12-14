@@ -3,7 +3,10 @@
 
 use super::CONFIG;
 use crate::board_util::{self, Mode, Size, Tiles};
-use crate::fixed::{Action, Arrow, COLORS, TINY_DELAY};
+use crate::fixed::{Action, Arrow, COLORS, TINY_DELAY, MAROON, BROWN, OLIVE,
+    TEAL, NAVY, BLACK, RED, ORANGE, YELLOW, LIME, GREEN, CYAN, BLUE, PURPLE,
+    MAGENTA, GREY, PINK, APRICOT, BEIGE, MINT, LAVENDER, WHITE,
+    name_for_color};
 use crate::util::Pos;
 use fltk::enums::Color;
 use fltk::prelude::*;
@@ -81,11 +84,33 @@ impl Board {
 
     fn get_colors(&self) -> Vec<Color> {
         let mut rng = rand::thread_rng();
-        let colors = COLORS.get().read().unwrap();
+        let all_colors = COLORS.get().read().unwrap();
+        let mut colors: Vec<Color>;
+        loop {
+            let mut ok = true;
+            colors = all_colors
+                .choose_multiple(&mut rng,
+                                 (*self.maxcolors.borrow()).into())
+                .cloned()
+                .collect();
+            for (a, b) in [(BEIGE, WHITE), (TEAL, GREEN),
+                           (PINK, APRICOT)].iter() {
+                if colors.contains(&a) && colors.contains(&b) {
+                    ok = false; // disallow hard to see color combinations
+                    break;
+                }
+            }
+            if ok {
+                break;
+            }
+        }
+        // TODO delete
+        for color in colors.iter() {
+            print!("{} ", name_for_color(*color));
+        }
+        println!();
+        //
         colors
-            .choose_multiple(&mut rng, (*self.maxcolors.borrow()).into())
-            .cloned()
-            .collect()
     }
 
     pub fn on_arrow(&mut self, arrow: Arrow) {

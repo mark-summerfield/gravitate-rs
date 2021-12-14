@@ -30,6 +30,57 @@ pub const DELAY_MS_MAX: u16 = 1000;
 pub const MESSAGE_DELAY: f64 = 10.0; // seconds
 pub const TINY_DELAY: f64 = 0.005; // seconds
 
+pub const MAROON: Color = Color::from_hex(0x800000);
+pub const BROWN: Color = Color::from_hex(0x9A6324);
+pub const OLIVE: Color = Color::from_hex(0x808000);
+pub const TEAL: Color = Color::from_hex(0x469990);
+pub const NAVY: Color = Color::from_hex(0x000075);
+pub const BLACK: Color = Color::from_hex(0x000000);
+pub const RED: Color = Color::from_hex(0xE6194B);
+pub const ORANGE: Color = Color::from_hex(0xF58231);
+pub const YELLOW: Color = Color::from_hex(0xFFE119);
+pub const LIME: Color = Color::from_hex(0xBFEF45);
+pub const GREEN: Color = Color::from_hex(0x3CB44B);
+pub const CYAN: Color = Color::from_hex(0x42D4F4);
+pub const BLUE: Color = Color::from_hex(0x4363D8);
+pub const PURPLE: Color = Color::from_hex(0x911EB4);
+pub const MAGENTA: Color = Color::from_hex(0xF032E6);
+pub const GREY: Color = Color::from_hex(0xA9A9A9);
+pub const PINK: Color = Color::from_hex(0xFABED4);
+pub const APRICOT: Color = Color::from_hex(0xFFD8B1);
+pub const BEIGE: Color = Color::from_hex(0xFFFAC8);
+pub const MINT: Color = Color::from_hex(0xAAFFC3);
+pub const LAVENDER: Color = Color::from_hex(0xDCBEFF);
+pub const WHITE: Color = Color::from_hex(0xFFFFFF);
+
+pub fn name_for_color(color: Color) -> &'static str {
+    match color {
+        MAROON => "MAROON",
+        BROWN => "BROWN",
+        OLIVE => "OLIVE",
+        TEAL => "TEAL",
+        NAVY => "NAVY",
+        BLACK => "BLACK",
+        RED => "RED",
+        ORANGE => "ORANGE",
+        YELLOW => "YELLOW",
+        LIME => "LIME",
+        GREEN => "GREEN",
+        CYAN => "CYAN",
+        BLUE => "BLUE",
+        PURPLE => "PURPLE",
+        MAGENTA => "MAGENTA",
+        GREY => "GREY",
+        PINK => "PINK",
+        APRICOT => "APRICOT",
+        BEIGE => "BEIGE",
+        MINT => "MINT",
+        LAVENDER => "LAVENDER",
+        WHITE => "WHITE",
+        _ => "unnamed"
+    }
+}
+
 #[derive(Copy, Clone, Debug)]
 pub enum Action {
     New,
@@ -61,28 +112,9 @@ pub static COLORS: state::Storage<sync::RwLock<Vec<Color>>> =
     state::Storage::new();
 
 pub fn initialize_colors() {
-    let colors = vec![
-        Color::from_hex(0x000075),
-        Color::from_hex(0x3CB44B),
-        Color::from_hex(0x42D4F4),
-        Color::from_hex(0x4363D8),
-        Color::from_hex(0x469990),
-        Color::from_hex(0x800000),
-        Color::from_hex(0x808000),
-        Color::from_hex(0x911EB4),
-        Color::from_hex(0x9A6324),
-        Color::from_hex(0xA9A9A9),
-        Color::from_hex(0xAAFFC3),
-        Color::from_hex(0xBFEF45),
-        Color::from_hex(0xDCBEFF),
-        Color::from_hex(0xE6194B),
-        Color::from_hex(0xF032E6),
-        Color::from_hex(0xF58231),
-        Color::from_hex(0xFABED4),
-        Color::from_hex(0xFFD8B1),
-        Color::from_hex(0xFFE119),
-        Color::from_hex(0xFFFAC8),
-    ];
+    let colors = vec![MAROON, BROWN, OLIVE, TEAL, NAVY, BLACK, RED, ORANGE,
+        YELLOW, LIME, GREEN, CYAN, BLUE, PURPLE, MAGENTA, GREY, PINK,
+        APRICOT, BEIGE, MINT, LAVENDER, WHITE];
     COLORS.set(sync::RwLock::new(colors));
 }
 
