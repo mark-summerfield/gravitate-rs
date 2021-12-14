@@ -2,14 +2,11 @@
 // License: GPLv3
 
 use crate::fixed::{APPNAME, BUTTON_HEIGHT, BUTTON_WIDTH, ICON};
-use crate::util::Pos;
+use crate::util;
 use fltk::prelude::*;
-use std::cell::RefCell;
-use std::rc::Rc;
 
 pub struct Form {
     form: fltk::window::Window,
-    pos: Rc<RefCell<Pos>>,
 }
 
 impl Form {
@@ -19,27 +16,23 @@ impl Form {
         modal: bool,
         width: i32,
         height: i32,
+        resizable: bool,
     ) -> Self {
         let (mut form, mut ok_button) =
-            make_widgets(title, html_text, width, height);
+            make_widgets(title, html_text, width, height, resizable);
         form.make_modal(modal);
-        let pos = add_event_handlers(&mut form, &mut ok_button);
+        add_event_handler(&mut form, &mut ok_button);
         form.show();
         if modal {
             while form.shown() {
                 fltk::app::wait();
             }
         }
-        Self { form, pos }
+        Self { form }
     }
 
     pub fn show(&mut self) {
         self.form.show();
-        let pos = *self.pos.borrow();
-        if pos.is_valid() {
-            self.form.set_pos(pos.x, pos.y);
-            self.form.redraw();
-        }
     }
 }
 
@@ -54,11 +47,14 @@ fn make_widgets(
     html_text: &str,
     width: i32,
     height: i32,
+    resizable: bool,
 ) -> (fltk::window::Window, fltk::button::Button) {
     let image = fltk::image::SvgImage::from_data(ICON).unwrap();
-    let mut form = fltk::window::Window::default()
-        .with_size(width, height)
-        .with_label(&format!("{} — {}", title, APPNAME));
+    let x = util::x() - 200;
+    let y = util::y() - 100;
+    let mut form = fltk::window::Window::new(x, y, width, height, "");
+    form.set_label(&format!("{} — {}", title, APPNAME));
+    form.make_resizable(resizable);
     form.set_icon(Some(image));
     let mut vbox = fltk::group::Flex::default().size_of_parent().column();
     fltk::misc::HelpView::default().set_value(html_text);
@@ -75,25 +71,14 @@ fn make_widgets(
     (form, ok_button)
 }
 
-fn add_event_handlers(
+fn add_event_handler(
     form: &mut fltk::window::Window,
-    ok_button: &mut fltk::button::Button)
--> Rc<RefCell<Pos>> {
-    let pos = Rc::new(RefCell::new(Pos::default()));
-    form.handle({
-        let pos = pos.clone();
-        move |form, event| {
-            if event == fltk::enums::Event::Resize {
-                *pos.borrow_mut() = Pos::new(form.x(), form.y());
-            }
-            false
-        }
-    });
+    ok_button: &mut fltk::button::Button,
+) {
     ok_button.set_callback({
         let mut form = form.clone();
         move |_| {
             form.hide();
         }
     });
-    pos
 }
