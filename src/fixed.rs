@@ -53,34 +53,6 @@ pub const MINT: Color = Color::from_hex(0xAAFFC3);
 pub const LAVENDER: Color = Color::from_hex(0xDCBEFF);
 pub const WHITE: Color = Color::from_hex(0xFFFFFF);
 
-pub fn name_for_color(color: Color) -> &'static str {
-    match color {
-        MAROON => "MAROON",
-        BROWN => "BROWN",
-        OLIVE => "OLIVE",
-        TEAL => "TEAL",
-        NAVY => "NAVY",
-        BLACK => "BLACK",
-        RED => "RED",
-        ORANGE => "ORANGE",
-        YELLOW => "YELLOW",
-        LIME => "LIME",
-        GREEN => "GREEN",
-        CYAN => "CYAN",
-        BLUE => "BLUE",
-        PURPLE => "PURPLE",
-        MAGENTA => "MAGENTA",
-        GREY => "GREY",
-        PINK => "PINK",
-        APRICOT => "APRICOT",
-        BEIGE => "BEIGE",
-        MINT => "MINT",
-        LAVENDER => "LAVENDER",
-        WHITE => "WHITE",
-        _ => "unnamed"
-    }
-}
-
 #[derive(Copy, Clone, Debug)]
 pub enum Action {
     New,

@@ -3,10 +3,8 @@
 
 use super::CONFIG;
 use crate::board_util::{self, Mode, Size, Tiles};
-use crate::fixed::{Action, Arrow, COLORS, TINY_DELAY, MAROON, BROWN, OLIVE,
-    TEAL, NAVY, BLACK, RED, ORANGE, YELLOW, LIME, GREEN, CYAN, BLUE, PURPLE,
-    MAGENTA, GREY, PINK, APRICOT, BEIGE, MINT, LAVENDER, WHITE,
-    name_for_color};
+use crate::fixed::{Action, Arrow, COLORS, TINY_DELAY, BROWN, OLIVE,
+    TEAL, LIME, GREEN, PINK, APRICOT, BEIGE, MINT, LAVENDER, WHITE};
 use crate::util::Pos;
 use fltk::enums::Color;
 use fltk::prelude::*;
@@ -93,8 +91,12 @@ impl Board {
                                  (*self.maxcolors.borrow()).into())
                 .cloned()
                 .collect();
-            for (a, b) in [(BEIGE, WHITE), (TEAL, GREEN),
-                           (PINK, APRICOT)].iter() {
+            for (a, b) in [(BROWN, OLIVE),
+                           (TEAL, GREEN),
+                           (LIME, MINT),
+                           (APRICOT, PINK),
+                           (LAVENDER, PINK),
+                           (BEIGE, WHITE)].iter() {
                 if colors.contains(&a) && colors.contains(&b) {
                     ok = false; // disallow hard to see color combinations
                     break;
@@ -104,12 +106,6 @@ impl Board {
                 break;
             }
         }
-        // TODO delete
-        for color in colors.iter() {
-            print!("{} ", name_for_color(*color));
-        }
-        println!();
-        //
         colors
     }
 
