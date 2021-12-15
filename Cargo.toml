@@ -2,6 +2,15 @@
 name = "gravitate"
 version = "8.0.0"
 edition = "2021"
+publish = true
+authors = [ "Mark Summerfield <mark@qtrac.eu>",]
+include = [ "Cargo.toml", "src/**/*.rs", "images/*",]
+description = "A SameGame/TileFall-like game written in Rust/FLTK."
+homepage = "https://github.com/mark-summerfield/gravitate-rs"
+readme = "README.md"
+keywords = [ "game", "samegame", "tilefall", "fltk"]
+categories = ["games" ]
+license = "GPL-3.0-or-later"
 
 [profile.release]
 codegen-units = 1
