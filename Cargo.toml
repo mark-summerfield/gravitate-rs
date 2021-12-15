@@ -12,6 +12,9 @@ keywords = [ "game", "samegame", "tilefall", "fltk"]
 categories = ["games" ]
 license = "GPL-3.0-or-later"
 
+[badges.maintenance]
+status = "passively-maintained"
+
 [profile.release]
 codegen-units = 1
 lto = "fat"
