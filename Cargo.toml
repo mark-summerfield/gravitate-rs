@@ -10,7 +10,7 @@ homepage = "https://github.com/mark-summerfield/gravitate-rs"
 readme = "README.md"
 keywords = [ "game", "samegame", "tilefall", "fltk"]
 categories = ["games" ]
-license = "GPL-3.0-or-later"
+license = "GPL-3.0"
 
 [badges.maintenance]
 status = "passively-maintained"
