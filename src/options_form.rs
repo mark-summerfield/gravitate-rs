@@ -4,7 +4,7 @@
 use super::CONFIG;
 use crate::fixed::{
     APPNAME, BUTTON_HEIGHT, BUTTON_WIDTH, COLORS, COLORS_MIN, DELAY_MS_MAX,
-    DELAY_MS_MIN, ICON, SCALE_MAX, SCALE_MIN, SIZE_MAX, SIZE_MIN,
+    DELAY_MS_MIN, ICON, PAD, SCALE_MAX, SCALE_MIN, SIZE_MAX, SIZE_MIN,
 };
 use crate::util;
 use fltk::prelude::*;
@@ -22,6 +22,8 @@ impl Form {
         let mut form = make_form();
         let mut vbox =
             fltk::group::Flex::default().size_of_parent().column();
+        vbox.set_margin(PAD);
+        vbox.set_pad(PAD);
         let spinners = make_spinners();
         let (button_row, mut buttons) = make_buttons();
         vbox.set_size(&button_row, BUTTON_HEIGHT);
@@ -132,7 +134,7 @@ fn make_row(
     let row = fltk::group::Flex::default().row();
     let mut label = fltk::button::Button::default()
         .with_label(label)
-        .with_align(fltk::enums::Align::Inside | fltk::enums::Align::Right);
+        .with_align(fltk::enums::Align::Inside | fltk::enums::Align::Left);
     label.set_frame(fltk::enums::FrameType::NoBox);
     let mut spinner = fltk::misc::Spinner::default();
     spinner.set_value(value);

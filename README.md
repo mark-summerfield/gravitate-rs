@@ -2,12 +2,10 @@
 
 A SameGame/TileFall-like game written in Rust/FLTK.
 
-*WARNING* Work in Progress (so no Windows binary yet).
-
 ![Screenshot](screenshot.png)
 
-`gravitate.exe` *is a precompiled Windows binary that will run on pretty
-well any 64-bit version of Windows*
+`gravitate.exe` *is a precompiled Windows binary that should run on any
+64-bit version of Windows* (1.9MB; MD5 803c03e7554cb5e0e2f725b02ad05cc9)
 
 ## Dependencies
 
