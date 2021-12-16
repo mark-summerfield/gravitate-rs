@@ -57,7 +57,9 @@ fn make_widgets(
     form.make_resizable(resizable);
     form.set_icon(Some(image));
     let mut vbox = fltk::group::Flex::default().size_of_parent().column();
-    fltk::misc::HelpView::default().set_value(html_text);
+    let mut view = fltk::misc::HelpView::default();
+    view.set_value(html_text);
+    view.set_text_size((view.text_size() as f64 * 1.2) as i32);
     let mut button_row =
         fltk::group::Flex::default().size_of_parent().row();
     fltk::frame::Frame::default(); // pad left of button
