@@ -13,7 +13,7 @@ use std::rc::Rc;
 
 pub struct Form {
     form: fltk::window::Window,
-    pub ok: Rc<RefCell<bool>>,
+    pub(crate) ok: Rc<RefCell<bool>>,
 }
 
 impl Form {
@@ -46,16 +46,16 @@ impl Drop for Form {
 }
 
 struct Spinners {
-    pub columns_spinner: fltk::misc::Spinner,
-    pub rows_spinner: fltk::misc::Spinner,
-    pub max_colors_spinner: fltk::misc::Spinner,
-    pub delay_ms_spinner: fltk::misc::Spinner,
-    pub scale_spinner: fltk::misc::Spinner,
+    columns_spinner: fltk::misc::Spinner,
+    rows_spinner: fltk::misc::Spinner,
+    max_colors_spinner: fltk::misc::Spinner,
+    delay_ms_spinner: fltk::misc::Spinner,
+    scale_spinner: fltk::misc::Spinner,
 }
 
 struct Buttons {
-    pub ok_button: fltk::button::Button,
-    pub cancel_button: fltk::button::Button,
+    ok_button: fltk::button::Button,
+    cancel_button: fltk::button::Button,
 }
 
 fn make_form() -> fltk::window::Window {
