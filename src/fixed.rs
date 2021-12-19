@@ -110,11 +110,12 @@ color=\"navy\">A TileFall/SameGame-like game.</font></h2>
 color=\"green\">Copyright © {} Mark Summerfield.<br>
 All rights reserved.</font></h5>
 <h5><font face=\"Helvetica\" color=\"green\">License: GPLv3.</font></h5>
-<p>fltk-rs {} • FLTK {} • {}/{}</p>
+<p>Rust {} • fltk-rs {} • FLTK {} • {}/{}</p>
 </center></font>",
         APPNAME,
         VERSION,
         year,
+        rustc_version_runtime::version(),
         fltk::app::crate_version(),
         fltk::app::version_str(),
         capitalize_first(env::consts::OS),
