@@ -8,7 +8,7 @@ use std::env;
 use std::sync;
 
 pub static APPNAME: &str = "Gravitate";
-pub static VERSION: &str = "8.0.0";
+pub static VERSION: &str = "8.0.1";
 pub const ABOUT_ICON: &str = include_str!("../images/about.svg");
 pub const HELP_ICON: &str = include_str!("../images/help.svg");
 pub const ICON: &str = include_str!("../images/gravitate.svg");

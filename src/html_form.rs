@@ -59,7 +59,8 @@ fn make_widgets(
     let mut vbox = fltk::group::Flex::default().size_of_parent().column();
     let mut view = fltk::misc::HelpView::default();
     view.set_value(html_text);
-    view.set_text_size((view.text_size() as f64 * 1.2) as i32);
+    let scale = if cfg!(windows) { 1.35 } else { 1.2 };
+    view.set_text_size((view.text_size() as f64 * scale) as i32);
     let mut button_row =
         fltk::group::Flex::default().size_of_parent().row();
     fltk::frame::Frame::default(); // pad left of button

@@ -110,7 +110,7 @@ impl Application {
     }
 
     fn on_about(&mut self) {
-        html_form::Form::new("About", &about_html(), true, 450, 300, false);
+        html_form::Form::new("About", &about_html(), true, 480, 340, false);
     }
 
     fn on_help(&mut self) {
@@ -118,7 +118,7 @@ impl Application {
             helpform.show();
         } else {
             self.helpform = Some(html_form::Form::new(
-                "Help", HELP_HTML, false, 380, 420, true,
+                "Help", HELP_HTML, false, 480, 420, true,
             ));
         }
     }
