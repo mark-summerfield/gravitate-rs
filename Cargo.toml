@@ -1,6 +1,6 @@
 [package]
 name = "gravitate"
-version = "8.0.1"
+version = "8.0.2"
 edition = "2021"
 publish = true
 authors = [ "Mark Summerfield <mark@qtrac.eu>",]
@@ -8,9 +8,18 @@ include = [ "Cargo.toml", "src/**/*.rs", "images/*",]
 description = "A SameGame/TileFall-like game written in Rust/FLTK."
 homepage = "https://github.com/mark-summerfield/gravitate-rs"
 readme = "README.md"
-keywords = [ "game", "samegame", "tilefall", "fltk"]
-categories = ["games" ]
+keywords = [ "game", "samegame", "tilefall", "fltk",]
+categories = [ "games",]
 license = "GPL-3.0"
+
+[dependencies]
+chrono = "^0.4"
+dirs = "^4"
+num = "^0.4"
+rust-ini = "^0.17"
+rustc_version_runtime = "^0.2"
+state = "^0.5"
+thousands = "^0.2.0"
 
 [badges.maintenance]
 status = "passively-maintained"
@@ -19,13 +28,11 @@ status = "passively-maintained"
 codegen-units = 1
 lto = "fat"
 
-[dependencies]
-chrono = "^0.4"
-dirs = "^4"
-fltk = { version = "^1.2", features = ["no-pango",], git = "https://github.com/fltk-rs/fltk-rs" }
-num = "^0.4"
-rand = { version = "^0.8", features = ["alloc"] }
-rust-ini = "^0.17"
-rustc_version_runtime = "0.1.*"
-state = "^0.5"
-thousands = "^0.2.0"
+[dependencies.fltk]
+version = "^1.2"
+features = [ "no-pango",]
+git = "https://github.com/fltk-rs/fltk-rs"
+
+[dependencies.rand]
+version = "^0.8"
+features = [ "alloc",]

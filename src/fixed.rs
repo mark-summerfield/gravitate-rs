@@ -8,7 +8,7 @@ use std::env;
 use std::sync;
 
 pub static APPNAME: &str = "Gravitate";
-pub static VERSION: &str = "8.0.1";
+pub static VERSION: &str = "8.0.2";
 pub const ABOUT_ICON: &str = include_str!("../images/about.svg");
 pub const HELP_ICON: &str = include_str!("../images/help.svg");
 pub const ICON: &str = include_str!("../images/gravitate.svg");
@@ -98,20 +98,22 @@ pub fn about_html() -> String {
         format!("2021-{}", year - 2000)
     };
     format!(
-        "<font face=\"Helvetica\"><center>
-<h1><font color=\"navy\">{} v{}</font></h1>
-<h3><font face=\"Helvetica\"
-color=\"navy\">A TileFall/SameGame-like game.</font></h2>
-</h3>
-<h4>
+        "<p><center><font size=6 color=navy><b>{}</b> v{}</font>
+</center></p>
+<p><center><font color=navy size=5>A TileFall/SameGame-like game.</font>
+</center></p>
+<p><center><font size=4>
 <a href=\"http://www.qtrac.eu/gravitate.html\">www.qtrac.eu/gravitate.html</a>
-</h4>
-<h5><font face=\"Helvetica\"
-color=\"green\">Copyright © {} Mark Summerfield.<br>
-All rights reserved.</font></h5>
-<h5><font face=\"Helvetica\" color=\"green\">License: GPLv3.</font></h5>
-<p>Rust {} • fltk-rs {} • FLTK {} • {}/{}</p>
-</center></font>",
+</font></center></p>
+<p><center>
+<font size=4 color=green>
+Copyright © {} Mark Summerfield.<br>
+All rights reserved.<br>
+License: GPLv3.</font>
+</center></p>
+<p><center><font size=4 color=#555>
+Rust {} • fltk-rs {} • FLTK {} • {}/{}
+</font></center></p>",
         APPNAME,
         VERSION,
         year,
@@ -124,11 +126,11 @@ All rights reserved.</font></h5>
 }
 
 pub static HELP_HTML: &str = "<body>
-<p><center><font color=navy size=7em><b>Gravitate</b></font></center></p>
-<font color=blue size=5em>The purpose of the game is to remove all the
+<p><center><font color=navy size=6><b>Gravitate</b></font></center></p>
+<font color=blue size=5>The purpose of the game is to remove all the
 tiles.</font>
 <p>
-<font color=#008000 size=4em>
+<font color=#008000 size=4>
 Click a tile that has at least one vertically or horizontally adjoining tile
 of the same color to remove it and any vertically or horizontally adjoining
 tiles of the same color, and <i>their</i> vertically or horizontally
@@ -138,7 +140,7 @@ go, the higher the score.
 </font>
 </p>
 <table border=1 align=center>
-<font color=blue>
+<font size=4 color=blue>
 <tr><th>Key</th><th>Action</th></tr>
 <tr><td><b>a</b></td><td>Show About box</td></tr>
 <tr><td><b>h</b> or <b>F1</b></td><td>Show this Help window</td></tr>
@@ -152,7 +154,7 @@ go, the higher the score.
 <tr><td><b>Space</b></td><td>Click the focused tile</td></tr>
 </font>
 </table>
-<font color=#008000>
+<font size=4 color=#008000>
 Gravitate works like TileFall and the SameGame except that instead of tiles
 falling to the bottom and moving off to the left, they “gravitate” to the
 middle.</font>
