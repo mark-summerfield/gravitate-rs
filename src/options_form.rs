@@ -30,7 +30,12 @@ impl Form {
         vbox.end();
         form.end();
         form.make_modal(true);
-        add_event_handlers(&mut form, &spinners, &mut buttons, ok.clone());
+        add_event_handlers(
+            &mut form,
+            &spinners,
+            &mut buttons,
+            Rc::clone(&ok),
+        );
         form.show();
         while form.shown() {
             fltk::app::wait();

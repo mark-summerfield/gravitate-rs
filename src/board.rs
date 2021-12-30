@@ -281,7 +281,7 @@ impl Board {
     }
 
     fn move_tiles(&mut self) {
-        let tiles = self.tiles.clone();
+        let tiles = Rc::clone(&self.tiles);
         let size = *self.size.borrow();
         let mut moved = true;
         let mut already_moved = PosForPos::new();
@@ -346,7 +346,7 @@ impl Board {
         let x = pos.x;
         let y = pos.y;
         let mut neighbours = PosSet::new();
-        let tiles = self.tiles.clone();
+        let tiles = Rc::clone(&self.tiles);
         for new_pos in [
             Pos::new(x - 1, y),
             Pos::new(x + 1, y),
@@ -371,7 +371,7 @@ impl Board {
     fn nearest_to_middle(&self, pos: Pos, empties: &PosSet) -> (bool, Pos) {
         let x = pos.x;
         let y = pos.y;
-        let tiles = self.tiles.clone();
+        let tiles = Rc::clone(&self.tiles);
         let color = tiles.borrow()[x as usize][y as usize].unwrap();
         let size = *self.size.borrow();
         let mid_x = size.columns / 2;
@@ -502,7 +502,7 @@ impl DerefMut for Board {
 }
 
 fn add_event_handler(board: &mut Board, sender: fltk::app::Sender<Action>) {
-    let mode = board.mode.clone();
+    let mode = Rc::clone(&board.mode);
     board.widget.handle(move |_, event| {
         if *mode.borrow() != Mode::Playing {
             return false;
@@ -518,10 +518,10 @@ fn add_event_handler(board: &mut Board, sender: fltk::app::Sender<Action>) {
 }
 
 fn add_draw_handler(board: &mut Board) {
-    let mode = board.mode.clone();
-    let selected = board.selected.clone();
-    let tiles = board.tiles.clone();
-    let size = board.size.clone();
+    let mode = Rc::clone(&board.mode);
+    let selected = Rc::clone(&board.selected);
+    let tiles = Rc::clone(&board.tiles);
+    let size = Rc::clone(&board.size);
     board.widget.draw(move |widget| {
         let width = widget.width();
         let height = widget.height();
