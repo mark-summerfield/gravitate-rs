@@ -208,9 +208,9 @@ impl Board {
         self.widget.redraw();
         #[allow(clippy::clone_on_copy)] // The clone is needed
         let sender = self.sender.clone();
-        fltk::app::add_timeout(
+        fltk::app::add_timeout3(
             *self.delay_ms.borrow() as f64 / 1000.0,
-            move || {
+            move |_| {
                 sender.send(Action::DeleteAdjoining);
             },
         );
@@ -253,9 +253,9 @@ impl Board {
         self.widget.redraw();
         #[allow(clippy::clone_on_copy)] // The clone is needed
         let sender = self.sender.clone();
-        fltk::app::add_timeout(
+        fltk::app::add_timeout3(
             *self.delay_ms.borrow() as f64 / 1000.0,
-            move || {
+            move |_| {
                 sender.send(Action::CloseUp);
             },
         );
@@ -328,7 +328,7 @@ impl Board {
                     0.2_f64.max(*self.delay_ms.borrow() as f64 / 7000.0);
                 #[allow(clippy::clone_on_copy)] // The clone is needed
                 let sender = self.sender.clone();
-                fltk::app::add_timeout(delay, move || {
+                fltk::app::add_timeout3(delay, move |_| {
                     sender.send(Action::Redraw);
                 });
                 return true;

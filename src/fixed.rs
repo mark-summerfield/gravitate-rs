@@ -8,7 +8,7 @@ use std::env;
 use std::sync;
 
 pub static APPNAME: &str = "Gravitate";
-pub static VERSION: &str = "8.0.3";
+pub static VERSION: &str = "8.0.4";
 pub const ABOUT_ICON: &str = include_str!("../images/about.svg");
 pub const HELP_ICON: &str = include_str!("../images/help.svg");
 pub const ICON: &str = include_str!("../images/gravitate.svg");
@@ -93,7 +93,7 @@ pub enum Arrow {
 pub fn about_html() -> String {
     let year = Local::today().year();
     let year = if year == 2021 {
-        format!("{}", year)
+        year.to_string()
     } else {
         format!("2021-{}", year - 2000)
     };

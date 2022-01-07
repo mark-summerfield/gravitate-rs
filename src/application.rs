@@ -153,9 +153,9 @@ impl Application {
         self.statusbar.set_label(message);
         fltk::app::redraw(); // redraws the world
         if let Some(timeout) = timeout {
-            fltk::app::add_timeout(timeout, {
+            fltk::app::add_timeout3(timeout, {
                 let mut statusbar = self.statusbar.clone();
-                move || {
+                move |_| {
                     statusbar.set_label("");
                     fltk::app::redraw(); // redraws the world
                 }
