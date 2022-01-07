@@ -1,6 +1,6 @@
 [package]
 name = "gravitate"
-version = "8.0.2"
+version = "8.0.4"
 edition = "2021"
 publish = true
 authors = [ "Mark Summerfield <mark@qtrac.eu>",]
@@ -21,13 +21,6 @@ rustc_version_runtime = "^0.2"
 state = "^0.5"
 thousands = "^0.2.0"
 
-[badges.maintenance]
-status = "passively-maintained"
-
-[profile.release]
-codegen-units = 1
-lto = "fat"
-
 [dependencies.fltk]
 version = "^1.2"
 features = [ "no-pango",]
@@ -36,3 +29,10 @@ git = "https://github.com/fltk-rs/fltk-rs"
 [dependencies.rand]
 version = "^0.8"
 features = [ "alloc",]
+
+[badges.maintenance]
+status = "passively-maintained"
+
+[profile.release]
+codegen-units = 1
+lto = "fat"
