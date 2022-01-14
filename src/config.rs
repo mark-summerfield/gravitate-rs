@@ -59,15 +59,14 @@ impl Config {
             match ini.write_to_file(&self.filename) {
                 Ok(_) => {}
                 Err(err) => self.warning(&format!(
-                    "failed to save configuration: {}",
-                    err
+                    "failed to save configuration: {err}"
                 )),
             }
         }
     }
 
     fn warning(&self, message: &str) {
-        fltk::dialog::message_title(&format!("Warning — {}", APPNAME));
+        fltk::dialog::message_title(&format!("Warning — {APPNAME}"));
         fltk::dialog::message(util::x() - 200, util::y() - 100, message);
     }
 }
@@ -101,7 +100,7 @@ fn get_config_filename() -> std::path::PathBuf {
     }
     if let Some(dir) = dir {
         // to_lowercase is for backwards compatability
-        dir.join(format!("{}{}.ini", dot, APPNAME.to_lowercase()))
+        dir.join(format!("{dot}{}.ini", APPNAME.to_lowercase()))
     } else {
         std::path::PathBuf::new()
     }
