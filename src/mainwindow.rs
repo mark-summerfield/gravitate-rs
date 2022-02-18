@@ -28,9 +28,7 @@ pub fn make(
     let size = ((TOOLBUTTON_SIZE * 4) / 3) * 6;
     mainwindow.size_range(size, size, size * 4, size * 4);
     mainwindow.make_resizable(true);
-    let mut vbox = fltk::group::Flex::default()
-        .size_of_parent()
-        .with_type(fltk::group::FlexType::Column);
+    let mut vbox = fltk::group::Flex::default().column().size_of_parent();
     vbox.set_margin(PAD);
     let toolbar = add_toolbar(sender, width);
     vbox.set_size(&toolbar, TOOLBAR_HEIGHT);
@@ -46,9 +44,8 @@ fn add_toolbar(
     sender: fltk::app::Sender<Action>,
     width: i32,
 ) -> fltk::group::Flex {
-    let mut button_box = fltk::group::Flex::default()
-        .with_size(width, TOOLBAR_HEIGHT)
-        .with_type(fltk::group::FlexType::Row);
+    let mut button_box =
+        fltk::group::Flex::default().row().with_size(width, TOOLBAR_HEIGHT);
     button_box.set_frame(fltk::enums::FrameType::UpBox);
     button_box.set_margin(PAD);
     add_toolbutton(
@@ -124,8 +121,8 @@ fn add_status_row(
     width: i32,
 ) -> (fltk::frame::Frame, fltk::frame::Frame) {
     let mut status_row = fltk::group::Flex::default()
-        .with_size(width, TOOLBUTTON_SIZE)
-        .with_type(fltk::group::FlexType::Row);
+        .row()
+        .with_size(width, TOOLBUTTON_SIZE);
     let mut statusbar = fltk::frame::Frame::default();
     statusbar.set_frame(fltk::enums::FrameType::EngravedFrame);
     let config = CONFIG.get().read().unwrap();
