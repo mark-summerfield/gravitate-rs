@@ -1,6 +1,8 @@
+cargo-features = ["strip"]
+
 [package]
 name = "gravitate"
-version = "8.0.5"
+version = "8.0.6"
 edition = "2021"
 publish = true
 authors = [ "Mark Summerfield <mark@qtrac.eu>",]
@@ -16,7 +18,7 @@ license = "GPL-3.0"
 chrono = "^0.4"
 dirs = "^4"
 num = "^0.4"
-rust-ini = "^0.17"
+rust-ini = "^0.18"
 rustc_version_runtime = "^0.2"
 state = "^0.5"
 thousands = "^0.2.0"
@@ -34,6 +36,7 @@ features = [ "alloc",]
 status = "passively-maintained"
 
 [profile.release]
-opt-level = "z"
+strip = true
+opt-level = "s" # 3 is fastest binary; use "s" for smallest
 lto = true
 codegen-units = 1
