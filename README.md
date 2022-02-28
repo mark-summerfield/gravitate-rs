@@ -7,7 +7,7 @@ Tested on Linux and Windows.
 ![Screenshot](screenshot.png)
 
 `gravitate.exe` *is a precompiled Windows binary that should run on any
-64-bit version of Windows* (1.6MB; MD5 8bb3d075ea27c03533134eaad79e459c)
+64-bit version of Windows* (1.6MB; MD5 cbe6e0c9d269d23b3bd374ee46239078)
 
 ## Dependencies
 
