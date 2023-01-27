@@ -24,7 +24,7 @@ pub struct Application {
 impl Application {
     pub fn new() -> Self {
         let app =
-            fltk::app::App::default().with_scheme(fltk::app::Scheme::Gleam);
+            fltk::app::App::default().with_scheme(fltk::app::Scheme::Oxy);
         let (sender, receiver) = fltk::app::channel::<Action>();
         let (mut mainwindow, board, statusbar, scorelabel) =
             mainwindow::make(sender);
