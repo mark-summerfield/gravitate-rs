@@ -1,4 +1,4 @@
 #!/bin/bash
-tokei -f -slines -c80 -tPython,Rust -etarget
+clc
 grep --color=auto --exclude-dir=target --include=*.rs -r format......,
 git st
