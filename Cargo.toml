@@ -1,8 +1,6 @@
-cargo-features = ["strip"]
-
 [package]
 name = "gravitate"
-version = "8.0.6"
+version = "8.0.7"
 edition = "2021"
 publish = true
 authors = [ "Mark Summerfield <mark@qtrac.eu>",]
@@ -39,4 +37,3 @@ status = "passively-maintained"
 strip = true
 opt-level = "s" # 3 is fastest binary; use "s" for smallest
 lto = true
-codegen-units = 1
