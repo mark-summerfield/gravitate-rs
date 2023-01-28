@@ -1,4 +1,4 @@
-// Copyright © 2021-22 Mark Summerfield. All rights reserved.
+// Copyright © 2021-23 Mark Summerfield. All rights reserved.
 // License: GPLv3
 
 use crate::util::capitalize_first;
@@ -91,7 +91,7 @@ pub enum Arrow {
 }
 
 pub fn about_html() -> String {
-    let year = Local::today().year();
+    let year = Local::now().year();
     let year = if year == 2021 {
         year.to_string()
     } else {

@@ -1,6 +1,7 @@
-// Copyright © 2021-22 Mark Summerfield. All rights reserved.
+// Copyright © 2021-23 Mark Summerfield. All rights reserved.
 // License: GPLv3
 
+use crate::fixed::APPNAME;
 use std::{cmp, fmt, str};
 
 pub fn x() -> i32 {
@@ -66,4 +67,9 @@ impl std::fmt::Display for Pos {
     fn fmt(&self, out: &mut std::fmt::Formatter) -> fmt::Result {
         write!(out, "({},{})", self.x, self.y)
     }
+}
+
+pub(crate) fn warning(message: &str) {
+    fltk::dialog::message_title(&format!("Warning — {APPNAME}"));
+    fltk::dialog::message(x() - 200, y() - 100, message);
 }

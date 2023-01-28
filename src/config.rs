@@ -1,4 +1,4 @@
-// Copyright © 2021-22 Mark Summerfield. All rights reserved.
+// Copyright © 2021-23 Mark Summerfield. All rights reserved.
 // License: GPLv3
 
 use crate::fixed::{
@@ -41,7 +41,7 @@ impl Config {
 
     pub fn save(&self, x: i32, y: i32, width: i32, height: i32) {
         if self.filename.to_string_lossy() == "" {
-            self.warning("failed to save configuration: no filename");
+            util::warning("failed to save configuration: no filename");
         } else {
             let mut ini = ini::Ini::new();
             ini.with_section(Some(WINDOW_SECTION))
@@ -58,17 +58,13 @@ impl Config {
                 .set(HIGH_SCORE_KEY, self.board_highscore.to_string());
             match ini.write_to_file(&self.filename) {
                 Ok(_) => {}
-                Err(err) => self.warning(&format!(
+                Err(err) => util::warning(&format!(
                     "failed to save configuration: {err}"
                 )),
             }
         }
     }
 
-    fn warning(&self, message: &str) {
-        fltk::dialog::message_title(&format!("Warning — {APPNAME}"));
-        fltk::dialog::message(util::x() - 200, util::y() - 100, message);
-    }
 }
 
 impl Default for Config {
