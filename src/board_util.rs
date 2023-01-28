@@ -72,7 +72,7 @@ pub fn draw_tiles(
 
 fn draw_tile(x: i32, y: i32, width: i32, height: i32, color: Color) {
     fltk::draw::draw_box(
-        fltk::enums::FrameType::RoundUpBox,
+        fltk::enums::FrameType::UpBox,
         x,
         y,
         width,
