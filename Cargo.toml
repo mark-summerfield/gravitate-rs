@@ -1,6 +1,6 @@
 [package]
 name = "gravitate"
-version = "8.0.7"
+version = "8.0.8"
 edition = "2021"
 publish = true
 authors = [ "Mark Summerfield <mark@qtrac.eu>",]
@@ -35,5 +35,5 @@ status = "passively-maintained"
 
 [profile.release]
 strip = true
-opt-level = "s" # 3 is fastest binary; use "s" for smallest
+opt-level = "s"
 lto = true
