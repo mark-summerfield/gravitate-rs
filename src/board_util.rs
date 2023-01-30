@@ -33,8 +33,8 @@ pub fn get_tile_size(
     width: i32,
     height: i32,
 ) -> (i32, i32) {
-    let tile_width = width / columns as i32;
-    let tile_height = height / rows as i32;
+    let tile_width = width / columns;
+    let tile_height = height / rows;
     (tile_width, tile_height)
 }
 
@@ -53,11 +53,11 @@ pub fn draw_tiles(
     selected: Option<Pos>,
 ) {
     let (tile_width, tile_height) =
-        get_tile_size(size.columns as i32, size.rows as i32, width, height);
+        get_tile_size(size.columns, size.rows, width, height);
     for column in 0..size.columns {
-        let x = x1 + (tile_width * column as i32);
+        let x = x1 + (tile_width * column);
         for row in 0..size.rows {
-            let y = y1 + (tile_height * row as i32);
+            let y = y1 + (tile_height * row);
             if let Some(color) = tiles[column as usize][row as usize] {
                 draw_tile(x, y, tile_width, tile_height, color);
                 if let Some(pos) = selected {

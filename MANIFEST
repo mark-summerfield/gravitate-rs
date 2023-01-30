@@ -16,5 +16,6 @@ st.sh
 
 deploy.sh
 deploy.bat
+prepare.bat
 
 # vim: syn=yaml

@@ -3,8 +3,10 @@
 
 use super::CONFIG;
 use crate::board_util::{self, Mode, Size, Tiles};
-use crate::fixed::{Action, Arrow, COLORS, TINY_DELAY, BROWN, OLIVE,
-    TEAL, LIME, GREEN, PINK, APRICOT, BEIGE, MINT, LAVENDER, WHITE};
+use crate::fixed::{
+    Action, Arrow, APRICOT, BEIGE, BROWN, COLORS, GREEN, LAVENDER, LIME,
+    MINT, OLIVE, PINK, TEAL, TINY_DELAY, WHITE,
+};
 use crate::util::Pos;
 use fltk::enums::Color;
 use fltk::prelude::*;
@@ -86,16 +88,22 @@ impl Board {
         let mut colors: Vec<Color>;
         'color: loop {
             colors = all_colors
-                .choose_multiple(&mut rng,
-                                 (*self.maxcolors.borrow()).into())
+                .choose_multiple(
+                    &mut rng,
+                    (*self.maxcolors.borrow()).into(),
+                )
                 .cloned()
                 .collect();
-            for (a, b) in [(BROWN, OLIVE),
-                           (TEAL, GREEN),
-                           (LIME, MINT),
-                           (APRICOT, PINK),
-                           (LAVENDER, PINK),
-                           (BEIGE, WHITE)].iter() {
+            for (a, b) in [
+                (BROWN, OLIVE),
+                (TEAL, GREEN),
+                (LIME, MINT),
+                (APRICOT, PINK),
+                (LAVENDER, PINK),
+                (BEIGE, WHITE),
+            ]
+            .iter()
+            {
                 if colors.contains(a) && colors.contains(b) {
                     continue 'color; // disallow hard to see color pairs
                 }
@@ -154,14 +162,14 @@ impl Board {
         let x = (fltk::app::event_x() - self.widget.x()) / tile_width;
         let y = (fltk::app::event_y() - self.widget.y()) / tile_height;
         *self.selected.borrow_mut() = None;
-        self.delete_tile(Pos::new(x as i32, y as i32));
+        self.delete_tile(Pos::new(x, y));
     }
 
     fn get_tile_size(&self) -> (i32, i32) {
         let size = *self.size.borrow();
         board_util::get_tile_size(
-            size.columns as i32,
-            size.rows as i32,
+            size.columns,
+            size.rows,
             self.widget.width(),
             self.widget.height(),
         )
@@ -535,7 +543,7 @@ fn add_draw_handler(board: &mut Board) {
             width,
             height,
             *size.borrow(),
-            &*tiles.borrow(),
+            &tiles.borrow(),
             *selected.borrow(),
         );
         match *mode.borrow() {
