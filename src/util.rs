@@ -35,10 +35,6 @@ pub fn isclose32(a: f32, b: f32) -> bool {
     (a..=(a + f32::EPSILON)).contains(&b)
 }
 
-pub fn isone32(n: f32) -> bool {
-    (1.0..=(1.0 + f32::EPSILON)).contains(&n)
-}
-
 #[derive(Copy, Clone, Debug, PartialEq, Eq, Hash, PartialOrd, Ord)]
 pub struct Pos {
     pub x: i32,
