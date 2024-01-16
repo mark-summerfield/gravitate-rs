@@ -191,10 +191,8 @@ fn add_event_handlers(
             config.board_delay_ms = delay_ms_spinner.value() as u16;
             let old_scale = config.window_scale;
             let new_scale = scale_spinner.value() as f32;
-            if !util::isclose32(old_scale, new_scale) {
-                config.window_scale = new_scale;
-                fltk::app::set_screen_scale(0, new_scale);
-            }
+            config.window_scale = new_scale;
+            fltk::app::set_screen_scale(0, new_scale);
             form.hide();
         }
     });
